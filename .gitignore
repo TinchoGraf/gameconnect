@@ -1,0 +1,43 @@
+# Entornos virtuales
+venv/
+env/
+.venv/
+ENV/
+
+# Variables de entorno (NUNCA subir!)
+.env
+.env.local
+.env.*.local
+
+# Base de datos local
+*.db
+*.sqlite
+*.sqlite3
+gameconnect.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Distribuciones
+build/
+dist/
+*.egg
