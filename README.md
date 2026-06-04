@@ -6,9 +6,9 @@ GameConnect resuelve un problema real de la comunidad gamer: encontrar gente con
 
 ## Estado del proyecto
 
-🚧 **En desarrollo activo** - Fase 1: Fundación del backend
+🚧 **En desarrollo activo** - Fase 3: Perfiles de juego implementados
 
-Este proyecto se construye públicamente, documentando cada decisión técnica. Seguí el progreso en Instagram: [@tinchograf.dev](#) 
+Este proyecto se construye públicamente, documentando cada decisión técnica. Seguí el progreso en Instagram: [@tu_usuario](#) *(próximamente)*
 
 ## Qué problema resuelve
 
@@ -48,8 +48,8 @@ SQLite es un archivo. Cero configuración, cero servicios corriendo. Para desarr
 ## Roadmap
 
 - [x] **Fase 1**: Setup del proyecto, modelos base, seed de juegos
-- [ ] **Fase 2**: Autenticación (registro, login, JWT)
-- [ ] **Fase 3**: Perfiles de juego por usuario
+- [x] **Fase 2**: Autenticación (registro, login, JWT)
+- [x] **Fase 3**: Perfiles de juego por usuario
 - [ ] **Fase 4**: Sistema de búsquedas (crear, listar, unirse)
 - [ ] **Fase 5**: Confirmación de partidas y reviews
 - [ ] **Fase 6**: Sistema de reputación con anti-troll ponderado

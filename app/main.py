@@ -9,12 +9,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import auth, games, users
+from app.routers import auth, game_profiles, games, users
 
 app = FastAPI(
     title="GameConnect API",
     description="API para conectar jugadores de videojuegos según afinidades, servidores y estilo de juego.",
-    version="0.2.0",
+    version="0.3.0",
 )
 
 # CORS: permite que un frontend en otro dominio (ej. localhost:5173)
@@ -34,7 +34,7 @@ def root():
     return {
         "service": "GameConnect API",
         "status": "ok",
-        "version": "0.2.0",
+        "version": "0.3.0",
         "docs": "/docs",
     }
 
@@ -42,4 +42,5 @@ def root():
 # Registramos los routers (orden por convención: auth primero, luego recursos)
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(game_profiles.router)
 app.include_router(games.router)

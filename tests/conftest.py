@@ -3,14 +3,6 @@ Fixtures compartidas de pytest.
 
 Configura una base de datos SQLite temporal (en memoria) para cada test,
 para que los tests sean rápidos, aislados y no toquen la BD real.
-
-Cómo funciona:
-- Antes de cada test: creamos las tablas en una BD limpia.
-- Después de cada test: destruimos todo.
-- Sobreescribimos la dependencia get_db de la app para usar esta BD temporal.
-
-Esto es un patrón estándar en proyectos FastAPI. Vale la pena entenderlo:
-si los tests comparten estado, los bugs se vuelven aleatorios y dolorosos.
 """
 
 import pytest
@@ -24,10 +16,9 @@ from app.main import app
 
 # Importamos todos los modelos para que Base.metadata los conozca al crear tablas.
 from app import models  # noqa: F401
+from app.models.game import Game
 
 
-# BD SQLite en memoria, compartida entre conexiones del mismo test.
-# StaticPool + check_same_thread=False son necesarios para SQLite + tests.
 TEST_DATABASE_URL = "sqlite:///:memory:"
 engine = create_engine(
     TEST_DATABASE_URL,
@@ -51,16 +42,13 @@ def db_session():
 
 @pytest.fixture
 def client(db_session):
-    """
-    TestClient con la dependencia get_db sobreescrita para usar la BD de test.
-    Cualquier endpoint que use get_db, dentro de un test, va a usar db_session.
-    """
+    """TestClient con la dependencia get_db sobreescrita para usar la BD de test."""
 
     def override_get_db():
         try:
             yield db_session
         finally:
-            pass  # No cerramos acá: lo hace el fixture db_session
+            pass
 
     app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as c:
@@ -69,10 +57,9 @@ def client(db_session):
 
 
 # --------------------------------------------------------------------------
-# Helpers reutilizables
+# Datos comunes
 # --------------------------------------------------------------------------
 
-# Datos de un usuario válido para reutilizar en muchos tests
 VALID_USER_PAYLOAD = {
     "username": "testplayer",
     "email": "test@gameconnect.dev",
@@ -93,7 +80,7 @@ def registered_user(client):
 
 @pytest.fixture
 def auth_token(client, registered_user):
-    """Hace login con el usuario registrado y devuelve el token JWT."""
+    """Hace login y devuelve el token JWT."""
     response = client.post(
         "/auth/login",
         data={
@@ -107,5 +94,39 @@ def auth_token(client, registered_user):
 
 @pytest.fixture
 def auth_headers(auth_token):
-    """Headers listos para incluir en requests autenticados."""
+    """Headers listos para requests autenticados."""
     return {"Authorization": f"Bearer {auth_token}"}
+
+
+# --------------------------------------------------------------------------
+# Fixtures de juegos (para tests de GameProfile)
+# --------------------------------------------------------------------------
+
+@pytest.fixture
+def loaded_games(db_session):
+    """
+    Carga los juegos necesarios para los tests de game-profiles.
+    Versión reducida del seed real, solo los datos imprescindibles.
+    """
+    games_data = [
+        {
+            "name": "League of Legends",
+            "slug": "league-of-legends",
+            "description": "MOBA 5v5",
+            "roles": ["Top", "Jungla", "Mid", "ADC", "Support"],
+            "servers": ["LAS", "LAN", "NA", "EUW", "KR"],
+            "game_modes": ["chill", "tryhard"],
+        },
+        {
+            "name": "Counter Strike 2",
+            "slug": "counter-strike-2",
+            "description": "FPS 5v5",
+            "roles": ["Entry Fragger", "AWPer", "IGL", "Support", "Lurker"],
+            "servers": ["SA", "NA-East", "EU-West"],
+            "game_modes": ["chill", "tryhard"],
+        },
+    ]
+    for data in games_data:
+        db_session.add(Game(**data))
+    db_session.commit()
+    return games_data
