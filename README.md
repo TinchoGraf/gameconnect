@@ -8,7 +8,7 @@ GameConnect resuelve un problema real de la comunidad gamer: encontrar gente con
 
 🚧 **En desarrollo activo** - Fase 1: Fundación del backend
 
-Este proyecto se construye públicamente, documentando cada decisión técnica. Seguí el progreso en Instagram: [@tu_usuario](#) *(próximamente)*
+Este proyecto se construye públicamente, documentando cada decisión técnica. Seguí el progreso en Instagram: [@tinchograf.dev](#) 
 
 ## Qué problema resuelve
 
