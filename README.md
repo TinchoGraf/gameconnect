@@ -6,7 +6,7 @@ GameConnect resuelve un problema real de la comunidad gamer: encontrar gente con
 
 ## Estado del proyecto
 
-🚧 **En desarrollo activo** - Fase 4: Sistema de búsquedas implementado
+🚧 **En desarrollo activo** - Fase 4.5: Alembic configurado, listo para Fase 5
 
 Este proyecto se construye públicamente, documentando cada decisión técnica. Seguí el progreso en Instagram: [@tu_usuario](#) *(próximamente)*
 
@@ -51,6 +51,7 @@ SQLite es un archivo. Cero configuración, cero servicios corriendo. Para desarr
 - [x] **Fase 2**: Autenticación (registro, login, JWT)
 - [x] **Fase 3**: Perfiles de juego por usuario
 - [x] **Fase 4**: Sistema de búsquedas (crear, listar, unirse)
+- [x] **Fase 4.5**: Migraciones de base de datos con Alembic
 - [ ] **Fase 5**: Confirmación de partidas y reviews
 - [ ] **Fase 5**: Confirmación de partidas y reviews
 - [ ] **Fase 6**: Sistema de reputación con anti-troll ponderado

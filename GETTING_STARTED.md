@@ -112,9 +112,19 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 
 Copiá lo que imprime y pegalo como valor de `SECRET_KEY` en `.env`.
 
-## 8. Cargar los juegos iniciales
+## 8. Inicializar la base de datos
 
-```bash
+Esto crea las tablas usando las migraciones de Alembic.
+
+```powershell
+alembic upgrade head
+```
+
+Vas a ver mensajes tipo `INFO [alembic.runtime.migration] Running upgrade -> 86277245427b, initial schema`.
+
+## 9. Cargar los juegos iniciales
+
+```powershell
 python -m app.seed.load_games
 ```
 
