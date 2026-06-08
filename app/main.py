@@ -1,19 +1,17 @@
 """
 Punto de entrada de la aplicación FastAPI.
-
-Acá creamos la instancia de FastAPI y registramos los routers de cada recurso.
 """
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import auth, game_profiles, games, searches, users
+from app.routers import auth, game_profiles, games, reviews, searches, users
 
 app = FastAPI(
     title="GameConnect API",
     description="API para conectar jugadores de videojuegos según afinidades, servidores y estilo de juego.",
-    version="0.4.0",
+    version="0.5.0",
 )
 
 app.add_middleware(
@@ -30,14 +28,14 @@ def root():
     return {
         "service": "GameConnect API",
         "status": "ok",
-        "version": "0.4.0",
+        "version": "0.5.0",
         "docs": "/docs",
     }
 
 
-# Registramos los routers
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(game_profiles.router)
 app.include_router(searches.router)
+app.include_router(reviews.router)
 app.include_router(games.router)

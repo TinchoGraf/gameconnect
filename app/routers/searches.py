@@ -626,3 +626,90 @@ def complete_search(
     db.commit()
     db.refresh(search)
     return _to_search_out(db, search)
+
+
+# --------------------------------------------------------------------------
+# Confirmación de que la partida ocurrió (habilita reviews)
+# --------------------------------------------------------------------------
+
+@router.post(
+    "/{search_id}/confirm-played",
+    response_model=ParticipationOut,
+    summary="Confirmar que efectivamente jugaste esta partida",
+)
+def confirm_played(
+    search_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Cada participante (creador o miembro aceptado) puede confirmar que la
+    partida realmente ocurrió. Esto es la primera barrera anti-troll:
+    las reviews entre dos usuarios solo se habilitan cuando ambos confirmaron.
+
+    Lógica:
+    - Si soy el creador: se marca creator_confirmed=True en TODAS las
+      participaciones aceptadas de esta búsqueda (yo confirmo "estos jugaron
+      conmigo").
+    - Si soy un participante: se marca participant_confirmed=True solo en
+      mi propia participación.
+
+    Solo se puede confirmar si la búsqueda está 'completed'.
+    """
+    search = _get_search_or_404(db, search_id)
+
+    if search.status != SearchStatus.COMPLETED.value:
+        raise HTTPException(
+            409,
+            f"Solo se puede confirmar una búsqueda 'completed' "
+            f"(actual: '{search.status}').",
+        )
+
+    is_creator = search.creator_id == current_user.id
+
+    if is_creator:
+        # El creador confirma a todos los aceptados de un saque.
+        # Además, como el creador también es participante, marca su propio
+        # participant_confirmed (no necesita confirmarse separado a sí mismo).
+        accepted_participations = (
+            db.query(Participation)
+            .filter(
+                Participation.search_id == search_id,
+                Participation.status == ParticipationStatus.ACCEPTED.value,
+            )
+            .all()
+        )
+        for p in accepted_participations:
+            p.creator_confirmed = True
+            if p.user_id == current_user.id:
+                p.participant_confirmed = True
+        db.commit()
+
+        # Devolvemos la participación del creador para consistencia
+        creator_participation = next(
+            (p for p in accepted_participations if p.user_id == current_user.id), None
+        )
+        if creator_participation:
+            db.refresh(creator_participation)
+            return creator_participation
+        raise HTTPException(500, "No se encontró la participación del creador.")
+
+    # Es un participante: confirma solo su propia participación
+    my_participation = (
+        db.query(Participation)
+        .filter(
+            Participation.search_id == search_id,
+            Participation.user_id == current_user.id,
+            Participation.status == ParticipationStatus.ACCEPTED.value,
+        )
+        .first()
+    )
+    if not my_participation:
+        raise HTTPException(
+            403, "No fuiste un participante aceptado en esta búsqueda."
+        )
+
+    my_participation.participant_confirmed = True
+    db.commit()
+    db.refresh(my_participation)
+    return my_participation
