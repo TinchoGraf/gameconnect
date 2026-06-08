@@ -10,6 +10,10 @@ Estados posibles:
 - "in_progress": están jugando
 - "completed": terminaron (acá se habilitan las reviews)
 - "cancelled": el creador la canceló
+
+Modos de unión:
+- "manual": el creador acepta/rechaza cada postulante uno por uno
+- "auto": si hay cupo y el server coincide, el usuario entra directamente
 """
 
 from datetime import datetime
@@ -38,40 +42,40 @@ class SearchStatus(str, Enum):
     CANCELLED = "cancelled"
 
 
+class JoinMode(str, Enum):
+    """Cómo se gestionan las uniones a esta búsqueda."""
+
+    MANUAL = "manual"  # El creador acepta/rechaza cada postulante
+    AUTO = "auto"      # Auto-aceptar si hay cupo
+
+
 class Search(Base):
     __tablename__ = "searches"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
-    # Quién creó la búsqueda
     creator_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
-
-    # A qué juego se refiere
     game_id: Mapped[int] = mapped_column(
         ForeignKey("games.id", ondelete="CASCADE"), nullable=False, index=True
     )
 
-    # Título y descripción libres
-    # Ejemplos: "Buscamos jungla y supp para ranked", "Partida casual de domingo"
     title: Mapped[str] = mapped_column(String(150), nullable=False)
     description: Mapped[str | None] = mapped_column(String(1000), nullable=True)
 
-    # Modo de juego: debe ser uno de Game.game_modes (validado en schema)
-    # Ejemplo: "chill", "tryhard", "ranked"
+    # Modo de juego: debe ser uno de Game.game_modes (validado en el router)
     mode: Mapped[str] = mapped_column(String(50), nullable=False)
 
     # Servidor donde se va a jugar (uno de Game.servers)
     server: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
 
     # Roles que se están buscando.
-    # Ejemplo para una partida de LoL: ["Jungla", "Support"]
+    # Ejemplo para LoL: ["Jungla", "Support"]
     # Vacío significa que cualquier rol está bien.
     roles_needed: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
 
     # Cantidad máxima de jugadores (incluyendo al creador)
-    # LoL = 5, CS = 5, DBD = 5 (1 killer + 4 survivors), RL 2v2 = 2, RL 3v3 = 3
     max_players: Mapped[int] = mapped_column(Integer, nullable=False)
 
     # Rango mínimo o preferido (texto libre, opcional)
@@ -82,11 +86,15 @@ class Search(Base):
         String(20), default=SearchStatus.OPEN.value, nullable=False, index=True
     )
 
+    # Modo de unión (manual o auto)
+    join_mode: Mapped[str] = mapped_column(
+        String(20), default=JoinMode.MANUAL.value, nullable=False
+    )
+
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
-    # Cuándo se marcó como "completed" (relevante para la ventana de reviews)
     completed_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
