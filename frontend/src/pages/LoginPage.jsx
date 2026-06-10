@@ -1,24 +1,16 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { api } from '../lib/api'
+import { useAuth } from '../lib/AuthContext'
 
-/**
- * Página de login.
- *
- * IMPORTANTE: el endpoint /auth/login del backend usa el estándar OAuth2,
- * que espera el cuerpo como x-www-form-urlencoded (no JSON).
- * Por eso construimos un URLSearchParams en vez de mandar un objeto JSON.
- *
- * El backend devuelve { access_token, token_type }.
- * Guardamos el token en localStorage con la clave 'gameconnect_token'.
- * El interceptor de axios (que armamos en lib/api.js) lo va a leer
- * automáticamente en cada request futura.
- */
 function LoginPage() {
   const navigate = useNavigate()
-  const location = useLocation() // Para leer mensajes que vengan del navigate
+  const location = useLocation()
+  const { loadCurrentUser } = useAuth()
 
-  // Si venimos de registrarnos exitosamente, location.state lo dice
+  // Si nos redirigieron acá desde una ruta protegida, guardamos cuál era
+  const redirectTo = location.state?.from || '/games'
+
   const justRegistered = location.state?.justRegistered
   const preFilledUsername = location.state?.username || ''
 
@@ -41,7 +33,6 @@ function LoginPage() {
     setError(null)
 
     try {
-      // OAuth2 password flow: form-urlencoded
       const body = new URLSearchParams()
       body.append('username', formData.username)
       body.append('password', formData.password)
@@ -50,12 +41,15 @@ function LoginPage() {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       })
 
-      // Guardamos el token. A partir de ahora, cada request lo manda automáticamente.
+      // Guardamos el token
       const { access_token } = response.data
       localStorage.setItem('gameconnect_token', access_token)
 
-      // Redirigimos a la página de juegos (lo cambiaremos a un dashboard real más adelante)
-      navigate('/games')
+      // Actualizamos el contexto trayendo los datos del usuario
+      await loadCurrentUser()
+
+      // Redirigimos a donde quería ir originalmente (o /games por defecto)
+      navigate(redirectTo, { replace: true })
     } catch (err) {
       const detail = err.response?.data?.detail
       if (typeof detail === 'string') {
@@ -74,7 +68,6 @@ function LoginPage() {
         <h1 className="text-3xl font-bold mb-2">Iniciar sesión</h1>
         <p className="text-gray-400 mb-6">Entrá a tu cuenta de GameConnect.</p>
 
-        {/* Banner de éxito si venimos del registro */}
         {justRegistered && (
           <div className="bg-green-900/50 border border-green-500 text-green-100 p-3 rounded-lg text-sm mb-4">
             ¡Cuenta creada! Iniciá sesión con tus datos.
