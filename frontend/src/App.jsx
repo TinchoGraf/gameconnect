@@ -6,16 +6,8 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import GamesPage from './pages/GamesPage'
 import ProfilePage from './pages/ProfilePage'
+import GameProfilesPage from './pages/GameProfilesPage'
 
-/**
- * Componente raíz de la app.
- *
- * <AuthProvider> envuelve TODO para que cualquier componente
- * pueda usar el hook useAuth().
- *
- * Las rutas protegidas (como /profile) están envueltas en <ProtectedRoute>.
- * Si el usuario no está logueado, lo redirige a /login.
- */
 function App() {
   return (
     <BrowserRouter>
@@ -33,6 +25,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/game-profiles"
+            element={
+              <ProtectedRoute>
+                <GameProfilesPage />
               </ProtectedRoute>
             }
           />
