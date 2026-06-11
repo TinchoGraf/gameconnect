@@ -317,3 +317,99 @@ class TestSearchLifecycle:
         sid = create.json()["id"]
         response = client.post(f"/searches/{sid}/complete", headers=user_with_lol_profile)
         assert response.status_code == 409
+
+
+# --------------------------------------------------------------------------
+# Tests del endpoint "mis búsquedas"
+# --------------------------------------------------------------------------
+
+class TestMySearches:
+    def test_empty_when_no_activity(self, client, user_with_lol_profile):
+        """Usuario sin búsquedas creadas ni participaciones devuelve listas vacías."""
+        response = client.get("/searches/me/listing", headers=user_with_lol_profile)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["created"] == []
+        assert data["participating"] == []
+
+    def test_shows_created_searches(self, client, user_with_lol_profile):
+        """Las búsquedas que creé aparecen en 'created'."""
+        client.post("/searches", json=_base_search_payload(), headers=user_with_lol_profile)
+        response = client.get("/searches/me/listing", headers=user_with_lol_profile)
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["created"]) == 1
+        assert data["participating"] == []
+
+    def test_shows_participating_searches(
+        self, client, user_with_lol_profile, second_user_with_lol_profile
+    ):
+        """Búsquedas donde me uní (sin ser creador) aparecen en 'participating'."""
+        # El usuario 1 crea
+        create_resp = client.post(
+            "/searches", json=_base_search_payload(), headers=user_with_lol_profile
+        )
+        sid = create_resp.json()["id"]
+
+        # El usuario 2 se une
+        client.post(
+            f"/searches/{sid}/join",
+            json={"role": "Jungla"},
+            headers=second_user_with_lol_profile,
+        )
+
+        # Listing del usuario 2: debería ver la búsqueda en participating
+        response = client.get(
+            "/searches/me/listing", headers=second_user_with_lol_profile
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["created"] == []
+        assert len(data["participating"]) == 1
+        assert data["participating"][0]["id"] == sid
+
+    def test_creator_does_not_see_own_search_in_participating(
+        self, client, user_with_lol_profile, second_user_with_lol_profile
+    ):
+        """Si soy creador, mi búsqueda solo aparece en 'created', no en 'participating'."""
+        client.post("/searches", json=_base_search_payload(), headers=user_with_lol_profile)
+        response = client.get("/searches/me/listing", headers=user_with_lol_profile)
+        data = response.json()
+        assert len(data["created"]) == 1
+        assert data["participating"] == []
+
+    def test_rejected_not_shown_in_participating(
+        self, client, user_with_lol_profile, second_user_with_lol_profile
+    ):
+        """Si me rechazaron, no debería aparecer en 'participating'."""
+        create_resp = client.post(
+            "/searches", json=_base_search_payload(), headers=user_with_lol_profile
+        )
+        sid = create_resp.json()["id"]
+
+        # User 2 se une (queda pending)
+        client.post(
+            f"/searches/{sid}/join",
+            json={"role": "Jungla"},
+            headers=second_user_with_lol_profile,
+        )
+
+        # User 1 rechaza
+        parts = client.get(f"/searches/{sid}/participations").json()
+        pending = [p for p in parts if p["status"] == "pending"][0]
+        user2_id = pending["user"]["id"]
+        client.post(
+            f"/searches/{sid}/participations/{user2_id}/reject",
+            headers=user_with_lol_profile,
+        )
+
+        # User 2 ahora no debería ver la búsqueda en participating
+        response = client.get(
+            "/searches/me/listing", headers=second_user_with_lol_profile
+        )
+        data = response.json()
+        assert data["participating"] == []
+
+    def test_requires_auth(self, client, loaded_games):
+        response = client.get("/searches/me/listing")
+        assert response.status_code == 401

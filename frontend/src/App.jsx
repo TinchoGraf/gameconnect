@@ -12,6 +12,7 @@ import EditGameProfilePage from './pages/EditGameProfilePage'
 import SearchesPage from './pages/SearchesPage'
 import CreateSearchPage from './pages/CreateSearchPage'
 import SearchDetailPage from './pages/SearchDetailPage'
+import MySearchesPage from './pages/MySearchesPage'
 
 function App() {
   return (
@@ -64,6 +65,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <CreateSearchPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-searches"
+            element={
+              <ProtectedRoute>
+                <MySearchesPage />
               </ProtectedRoute>
             }
           />

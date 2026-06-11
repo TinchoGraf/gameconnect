@@ -26,7 +26,7 @@ from app.models.participation import Participation, ParticipationStatus
 from app.models.search import JoinMode, Search, SearchStatus
 from app.models.user import User
 from app.schemas.participation import JoinRequest, ParticipationOut
-from app.schemas.search import SearchCreate, SearchOut, SearchUpdate
+from app.schemas.search import MySearchesResponse, SearchCreate, SearchOut, SearchUpdate
 
 router = APIRouter(prefix="/searches", tags=["searches"])
 
@@ -713,3 +713,57 @@ def confirm_played(
     db.commit()
     db.refresh(my_participation)
     return my_participation
+
+
+# --------------------------------------------------------------------------
+# Mis búsquedas (vista personal del usuario actual)
+# --------------------------------------------------------------------------
+
+@router.get(
+    "/me/listing",
+    response_model=MySearchesResponse,
+    summary="Listar mis búsquedas: creadas y donde participo",
+)
+def list_my_searches(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Devuelve las búsquedas relevantes para el usuario actual, agrupadas:
+
+    - "created": búsquedas que YO creé (de cualquier estado)
+    - "participating": búsquedas donde participo (status accepted o pending)
+                       y no soy el creador (excluimos las creadas porque
+                       ya aparecen en "created")
+    """
+    # Búsquedas creadas por mí
+    created_searches = (
+        db.query(Search)
+        .options(joinedload(Search.creator), joinedload(Search.game))
+        .filter(Search.creator_id == current_user.id)
+        .order_by(Search.created_at.desc())
+        .all()
+    )
+
+    # Búsquedas donde participo (accepted o pending) sin ser creador.
+    # Usamos un join sobre participations para filtrar.
+    participating_searches = (
+        db.query(Search)
+        .options(joinedload(Search.creator), joinedload(Search.game))
+        .join(Participation, Participation.search_id == Search.id)
+        .filter(
+            Participation.user_id == current_user.id,
+            Participation.status.in_([
+                ParticipationStatus.ACCEPTED.value,
+                ParticipationStatus.PENDING.value,
+            ]),
+            Search.creator_id != current_user.id,
+        )
+        .order_by(Search.created_at.desc())
+        .all()
+    )
+
+    return MySearchesResponse(
+        created=[_to_search_out(db, s) for s in created_searches],
+        participating=[_to_search_out(db, s) for s in participating_searches],
+    )

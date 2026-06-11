@@ -37,6 +37,12 @@ function Header() {
           {isAuthenticated ? (
             <>
               <Link
+                to="/my-searches"
+                className="text-gray-300 hover:text-white transition-colors"
+              >
+                Mis búsquedas
+              </Link>
+              <Link
                 to="/profile"
                 className="text-gray-300 hover:text-white transition-colors"
               >

@@ -101,3 +101,18 @@ class SearchOut(BaseModel):
     accepted_count: int = 0
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class MySearchesResponse(BaseModel):
+    """
+    Vista del usuario: las búsquedas relevantes para él, separadas por rol.
+
+    - created: búsquedas que yo creé
+    - participating: búsquedas donde estoy participando (accepted o pending)
+                     y no soy el creador
+
+    En cada lista, las búsquedas están ordenadas por fecha desc.
+    """
+
+    created: list[SearchOut]
+    participating: list[SearchOut]
