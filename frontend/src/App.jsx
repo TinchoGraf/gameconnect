@@ -8,6 +8,7 @@ import GamesPage from './pages/GamesPage'
 import ProfilePage from './pages/ProfilePage'
 import GameProfilesPage from './pages/GameProfilesPage'
 import CreateGameProfilePage from './pages/CreateGameProfilePage'
+import EditGameProfilePage from './pages/EditGameProfilePage'
 
 function App() {
   return (
@@ -42,6 +43,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <CreateGameProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/game-profiles/:slug/edit"
+            element={
+              <ProtectedRoute>
+                <EditGameProfilePage />
               </ProtectedRoute>
             }
           />
