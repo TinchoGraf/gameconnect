@@ -10,15 +10,12 @@ import ParticipantCard from '../components/ParticipantCard'
 /**
  * Página de detalle de una búsqueda. Muestra info + lista de participantes.
  *
- * Comportamiento variable según el rol del usuario:
+ * Comportamiento por rol:
  * - Visitante (no logueado): solo lectura.
- * - Logueado, no participante: puede unirse si tiene perfil y server coincide.
- * - Logueado, postulante pending: ve su estado y puede cancelar la postulación.
- * - Logueado, accepted no-creador: ve a los demás y puede salirse.
- * - Logueado, creador: aprueba/rechaza postulantes, cambia estado, cancela.
- *
- * Las acciones del creador (aceptar/rechazar/iniciar/completar/cancelar)
- * las implementamos en la sesión 3.2 — por ahora solo el lado del postulante.
+ * - Logueado no participante: puede unirse si cumple condiciones.
+ * - Postulante pending: ve su estado y puede cancelar postulación.
+ * - Accepted no-creador: ve a los demás y puede salirse.
+ * - Creador: acepta/rechaza, inicia, completa, cancela.
  */
 function SearchDetailPage() {
   const { id } = useParams()
@@ -28,23 +25,15 @@ function SearchDetailPage() {
   const { search, participations, loading, error, refresh } = useSearchDetail(id)
   const { profiles: myProfiles } = useMyGameProfiles()
 
-  // Estado para el form de unirse
   const [joinRole, setJoinRole] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
   const [actionError, setActionError] = useState(null)
 
-  /**
-   * Mi participación en esta búsqueda (si existe).
-   * Puede ser pending / accepted / rejected / left, o no existir.
-   */
   const myParticipation = useMemo(() => {
     if (!currentUser) return null
     return participations.find((p) => p.user.id === currentUser.id) || null
   }, [participations, currentUser])
 
-  /**
-   * Mi perfil para el juego de esta búsqueda (si existe).
-   */
   const myProfileForGame = useMemo(() => {
     if (!search) return null
     return myProfiles.find((p) => p.game.slug === search.game.slug) || null
@@ -55,11 +44,11 @@ function SearchDetailPage() {
   const pendingParticipations = participations.filter((p) => p.status === 'pending')
   const isSearchOpen = search?.status === 'open'
   const isSearchFull = search?.status === 'full'
+  const isInProgress = search?.status === 'in_progress'
   const canStillJoin = isSearchOpen && acceptedParticipations.length < (search?.max_players || 0)
 
-  /**
-   * Acción: unirse a la búsqueda.
-   */
+  // ----- Acciones de postulante -----
+
   async function handleJoin() {
     if (!joinRole) {
       setActionError('Elegí un rol antes de unirte.')
@@ -79,13 +68,9 @@ function SearchDetailPage() {
     }
   }
 
-  /**
-   * Acción: salirse de la búsqueda (también sirve para cancelar postulación pendiente).
-   */
   async function handleLeave() {
     const confirmed = window.confirm('¿Seguro que querés salirte de esta búsqueda?')
     if (!confirmed) return
-
     setActionLoading(true)
     setActionError(null)
     try {
@@ -100,7 +85,97 @@ function SearchDetailPage() {
     }
   }
 
-  // ----- Loading / error -----
+  // ----- Acciones del creador -----
+
+  async function handleAccept(userId) {
+    setActionLoading(true)
+    setActionError(null)
+    try {
+      await api.post(`/searches/${id}/participations/${userId}/accept`)
+      await refresh()
+    } catch (err) {
+      console.error(err)
+      const detail = err.response?.data?.detail
+      setActionError(typeof detail === 'string' ? detail : 'No pudimos aceptar al postulante.')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function handleReject(userId) {
+    const confirmed = window.confirm('¿Seguro que querés rechazar a este postulante?')
+    if (!confirmed) return
+    setActionLoading(true)
+    setActionError(null)
+    try {
+      await api.post(`/searches/${id}/participations/${userId}/reject`)
+      await refresh()
+    } catch (err) {
+      console.error(err)
+      const detail = err.response?.data?.detail
+      setActionError(typeof detail === 'string' ? detail : 'No pudimos rechazar al postulante.')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function handleStart() {
+    const confirmed = window.confirm('¿Marcar la búsqueda como "en juego"? Los demás verán que ya están jugando.')
+    if (!confirmed) return
+    setActionLoading(true)
+    setActionError(null)
+    try {
+      await api.post(`/searches/${id}/start`)
+      await refresh()
+    } catch (err) {
+      console.error(err)
+      const detail = err.response?.data?.detail
+      setActionError(typeof detail === 'string' ? detail : 'No pudimos iniciar la búsqueda.')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function handleComplete() {
+    const confirmed = window.confirm(
+      '¿Marcar la búsqueda como completada? Después de esto se podrán escribir reviews entre participantes (próxima fase).'
+    )
+    if (!confirmed) return
+    setActionLoading(true)
+    setActionError(null)
+    try {
+      await api.post(`/searches/${id}/complete`)
+      await refresh()
+    } catch (err) {
+      console.error(err)
+      const detail = err.response?.data?.detail
+      setActionError(typeof detail === 'string' ? detail : 'No pudimos completar la búsqueda.')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function handleCancel() {
+    const confirmed = window.confirm(
+      '¿Seguro que querés cancelar la búsqueda? Esta acción no se puede deshacer.'
+    )
+    if (!confirmed) return
+    setActionLoading(true)
+    setActionError(null)
+    try {
+      await api.delete(`/searches/${id}`)
+      // Después de cancelar redirigimos al listado
+      navigate('/searches')
+    } catch (err) {
+      console.error(err)
+      const detail = err.response?.data?.detail
+      setActionError(typeof detail === 'string' ? detail : 'No pudimos cancelar la búsqueda.')
+      setActionLoading(false)
+    }
+  }
+
+  // ----- Render -----
+
   if (loading) {
     return (
       <div className="min-h-screen bg-dark-900 text-white">
@@ -132,8 +207,6 @@ function SearchDetailPage() {
 
   if (!search) return null
 
-  // ----- Estados de UI según rol del usuario -----
-
   const statusLabels = {
     open: { text: 'Abierta', color: 'bg-green-900/40 text-green-300' },
     full: { text: 'Llena', color: 'bg-amber-900/40 text-amber-300' },
@@ -149,14 +222,13 @@ function SearchDetailPage() {
 
       <div className="max-w-4xl mx-auto px-4 py-8">
 
-        {/* Link volver */}
         <div className="mb-4">
           <Link to="/searches" className="text-gray-400 hover:text-white text-sm">
             ← Volver a búsquedas
           </Link>
         </div>
 
-        {/* Header de la búsqueda */}
+        {/* Header */}
         <div className="bg-dark-800 border border-dark-700 rounded-lg p-6 mb-6">
           <div className="flex items-start justify-between gap-3 mb-3">
             <div>
@@ -171,7 +243,7 @@ function SearchDetailPage() {
           </div>
 
           <p className="text-sm text-gray-400 mb-4">
-            Creada por <Link to={`/users/${search.creator.username}`} className="text-white hover:text-primary-500">{search.creator.username}</Link>
+            Creada por <span className="text-white">{search.creator.username}</span>
             {search.creator.reputation_score > 0 && (
               <span className="text-gray-500 ml-2">
                 · ⭐ {search.creator.reputation_score.toFixed(1)}
@@ -183,7 +255,6 @@ function SearchDetailPage() {
             <p className="text-gray-300 mb-4 whitespace-pre-wrap">{search.description}</p>
           )}
 
-          {/* Grid de detalles */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
             <div>
               <p className="text-xs text-gray-500">Server</p>
@@ -227,7 +298,7 @@ function SearchDetailPage() {
           )}
         </div>
 
-        {/* Acción según rol del usuario */}
+        {/* CTA login */}
         {!isAuthenticated && isSearchOpen && (
           <div className="bg-primary-700/20 border border-primary-700 rounded-lg p-4 mb-6 text-sm">
             <Link to="/login" className="text-primary-500 hover:underline font-semibold">
@@ -237,17 +308,46 @@ function SearchDetailPage() {
           </div>
         )}
 
-        {/* Soy creador: aviso */}
-        {isCreator && (
-          <div className="bg-dark-800 border border-primary-700 rounded-lg p-4 mb-6">
-            <p className="text-sm text-gray-300">
-              👑 Sos el creador de esta búsqueda. Las acciones para administrarla
-              (aceptar postulantes, iniciar, completar) las implementamos en la próxima sesión.
+        {/* Panel de creador: acciones de administración */}
+        {isCreator && search.status !== 'cancelled' && search.status !== 'completed' && (
+          <div className="bg-dark-800 border border-primary-700 rounded-lg p-6 mb-6">
+            <h2 className="text-lg font-semibold mb-3">👑 Panel del creador</h2>
+            <p className="text-sm text-gray-400 mb-4">
+              Estado actual: <strong>{statusUi.text}</strong>. Próximas acciones disponibles:
             </p>
+            <div className="flex flex-wrap gap-2">
+              {(isSearchOpen || isSearchFull) && (
+                <button
+                  onClick={handleStart}
+                  disabled={actionLoading}
+                  className="text-sm bg-blue-700 hover:bg-blue-600 disabled:bg-dark-700 text-white px-4 py-2 rounded transition-colors"
+                >
+                  ▶ Iniciar partida
+                </button>
+              )}
+              {isInProgress && (
+                <button
+                  onClick={handleComplete}
+                  disabled={actionLoading}
+                  className="text-sm bg-purple-700 hover:bg-purple-600 disabled:bg-dark-700 text-white px-4 py-2 rounded transition-colors"
+                >
+                  ✓ Marcar como completada
+                </button>
+              )}
+              {(isSearchOpen || isSearchFull || isInProgress) && (
+                <button
+                  onClick={handleCancel}
+                  disabled={actionLoading}
+                  className="text-sm bg-red-900 hover:bg-red-800 disabled:bg-dark-700 text-white px-4 py-2 rounded transition-colors"
+                >
+                  ✕ Cancelar búsqueda
+                </button>
+              )}
+            </div>
           </div>
         )}
 
-        {/* Tengo participación pending */}
+        {/* Postulación pending */}
         {myParticipation?.status === 'pending' && !isCreator && (
           <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-4 mb-6">
             <p className="text-sm text-amber-100 mb-3">
@@ -263,11 +363,11 @@ function SearchDetailPage() {
           </div>
         )}
 
-        {/* Tengo participación accepted y no soy creador */}
+        {/* Participación accepted */}
         {myParticipation?.status === 'accepted' && !isCreator && (
           <div className="bg-green-900/30 border border-green-700 rounded-lg p-4 mb-6">
             <p className="text-sm text-green-100 mb-3">
-              ✅ Estás dentro de esta búsqueda como <strong>{myParticipation.role || 'cualquier rol'}</strong>.
+              ✅ Estás dentro como <strong>{myParticipation.role || 'cualquier rol'}</strong>.
             </p>
             {(isSearchOpen || isSearchFull) && (
               <button
@@ -281,7 +381,7 @@ function SearchDetailPage() {
           </div>
         )}
 
-        {/* Postulación rejected o left: aviso */}
+        {/* rejected o left */}
         {(myParticipation?.status === 'rejected' || myParticipation?.status === 'left') && (
           <div className="bg-dark-800 border border-dark-700 rounded-lg p-4 mb-6 text-sm text-gray-400">
             {myParticipation.status === 'rejected'
@@ -290,7 +390,7 @@ function SearchDetailPage() {
           </div>
         )}
 
-        {/* Form para unirse: solo si está abierta, soy logueado, no soy creador, y no tengo participación activa */}
+        {/* Form unirse */}
         {isAuthenticated && !isCreator && canStillJoin &&
           (!myParticipation || ['rejected', 'left'].includes(myParticipation.status)) && (
           <div className="bg-dark-800 border border-dark-700 rounded-lg p-6 mb-6">
@@ -319,7 +419,7 @@ function SearchDetailPage() {
             ) : (
               <>
                 <p className="text-sm text-gray-400 mb-3">
-                  Elegí qué rol vas a jugar. Solo aparecen los que tenés en tu perfil de {search.game.name}.
+                  Elegí qué rol vas a jugar. Solo aparecen los que tenés en tu perfil.
                 </p>
                 <div className="flex flex-wrap items-center gap-3 mb-3">
                   <select
@@ -350,14 +450,14 @@ function SearchDetailPage() {
           </div>
         )}
 
-        {/* Error de acción */}
+        {/* Error */}
         {actionError && (
           <div className="bg-red-900/50 border border-red-500 text-red-100 p-3 rounded-lg text-sm mb-6">
             {actionError}
           </div>
         )}
 
-        {/* Lista de participantes aceptados */}
+        {/* Equipo */}
         <div className="bg-dark-800 border border-dark-700 rounded-lg p-6 mb-6">
           <h2 className="text-lg font-semibold mb-3">
             Equipo ({acceptedParticipations.length}/{search.max_players})
@@ -373,7 +473,7 @@ function SearchDetailPage() {
           )}
         </div>
 
-        {/* Lista de pendientes (visible para todos por transparencia, pero las acciones son solo del creador en sesión 3.2) */}
+        {/* Pendientes: con acciones de aceptar/rechazar si soy el creador */}
         {pendingParticipations.length > 0 && (
           <div className="bg-dark-800 border border-dark-700 rounded-lg p-6 mb-6">
             <h2 className="text-lg font-semibold mb-3">
@@ -381,7 +481,14 @@ function SearchDetailPage() {
             </h2>
             <div className="space-y-2">
               {pendingParticipations.map((p) => (
-                <ParticipantCard key={p.id} participation={p} />
+                <ParticipantCard
+                  key={p.id}
+                  participation={p}
+                  canManage={isCreator && isSearchOpen}
+                  onAccept={handleAccept}
+                  onReject={handleReject}
+                  actionLoading={actionLoading}
+                />
               ))}
             </div>
           </div>
