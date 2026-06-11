@@ -11,6 +11,7 @@ import CreateGameProfilePage from './pages/CreateGameProfilePage'
 import EditGameProfilePage from './pages/EditGameProfilePage'
 import SearchesPage from './pages/SearchesPage'
 import CreateSearchPage from './pages/CreateSearchPage'
+import SearchDetailPage from './pages/SearchDetailPage'
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/games" element={<GamesPage />} />
           <Route path="/searches" element={<SearchesPage />} />
+          <Route path="/searches/:id" element={<SearchDetailPage />} />
 
           {/* Rutas protegidas */}
           <Route
