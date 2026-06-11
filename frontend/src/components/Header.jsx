@@ -1,19 +1,13 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 
-/**
- * Header con navegación dinámica según el estado de autenticación.
- *
- * Si el usuario NO está logueado: muestra botones "Iniciar sesión" / "Crear cuenta"
- * Si SÍ está logueado: muestra el username + botón "Cerrar sesión"
- */
 function Header() {
   const { currentUser, isAuthenticated, logout } = useAuth()
   const navigate = useNavigate()
 
   function handleLogout() {
     logout()
-    navigate('/') // Después de cerrar sesión, volvemos al inicio
+    navigate('/')
   }
 
   return (
@@ -25,8 +19,14 @@ function Header() {
           🎮 <span className="text-primary-500">GameConnect</span>
         </Link>
 
-        {/* Links de navegación */}
+        {/* Links */}
         <div className="flex items-center gap-6">
+          <Link
+            to="/searches"
+            className="text-gray-300 hover:text-white transition-colors"
+          >
+            Búsquedas
+          </Link>
           <Link
             to="/games"
             className="text-gray-300 hover:text-white transition-colors"
@@ -35,11 +35,13 @@ function Header() {
           </Link>
 
           {isAuthenticated ? (
-            // Vista LOGUEADO
             <>
-              <span className="text-gray-300">
+              <Link
+                to="/profile"
+                className="text-gray-300 hover:text-white transition-colors"
+              >
                 Hola, <span className="text-primary-500 font-semibold">{currentUser.username}</span>
-              </span>
+              </Link>
               <button
                 onClick={handleLogout}
                 className="bg-dark-700 hover:bg-dark-900 border border-dark-700 text-white px-4 py-2 rounded-lg transition-colors"
@@ -48,7 +50,6 @@ function Header() {
               </button>
             </>
           ) : (
-            // Vista NO logueado (como antes)
             <>
               <Link
                 to="/login"
