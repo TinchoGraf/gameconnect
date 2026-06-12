@@ -14,6 +14,7 @@ import CreateSearchPage from './pages/CreateSearchPage'
 import SearchDetailPage from './pages/SearchDetailPage'
 import MySearchesPage from './pages/MySearchesPage'
 import PendingReviewsPage from './pages/PendingReviewsPage'
+import WriteReviewPage from './pages/WriteReviewPage'
 
 function App() {
   return (
@@ -82,6 +83,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <PendingReviewsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reviews/new"
+            element={
+              <ProtectedRoute>
+                <WriteReviewPage />
               </ProtectedRoute>
             }
           />
