@@ -1,0 +1,52 @@
+# Configuración de deploy para Render.
+#
+# Define dos recursos:
+# 1. Base de datos PostgreSQL gestionada por Render
+# 2. Web service que corre el backend FastAPI
+#
+# Render conecta automáticamente la BD al web service usando "fromDatabase"
+# para inyectar la DATABASE_URL como variable de entorno.
+
+databases:
+  - name: gameconnect-db
+    plan: free
+    databaseName: gameconnect
+    user: gameconnect
+
+services:
+  - type: web
+    name: gameconnect-api
+    runtime: python
+    plan: free
+    region: oregon
+    branch: main
+    rootDir: .
+
+    # Comando para instalar dependencias y correr migraciones
+    buildCommand: |
+      pip install -r requirements.txt
+      alembic upgrade head
+
+    # Comando para arrancar el server con gunicorn manejando workers de uvicorn
+    # --workers 2: corremos 2 procesos en paralelo (suficiente para free tier)
+    # --worker-class: usa el worker de uvicorn (async-compatible)
+    # --bind 0.0.0.0:$PORT: escucha en el puerto que Render asigna dinámicamente
+    startCommand: gunicorn app.main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gameconnect-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "60"
+      - key: CORS_ORIGINS
+        # Lo seteamos al final, cuando sepamos la URL de Vercel.
+        # Por ahora aceptamos un placeholder; en sesión 2 lo actualizamos.
+        value: "https://placeholder-actualizar-cuando-deployemos-vercel.com"

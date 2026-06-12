@@ -14,9 +14,18 @@ app = FastAPI(
     version="0.5.0",
 )
 
+# CORS: en desarrollo permitimos cualquier origen para no entorpecer el flujo.
+# En producción leemos la lista desde settings.cors_origins_list (parseada
+# desde CORS_ORIGINS, una variable de entorno con URLs separadas por coma).
+# Esto nos deja agregar el dominio de Vercel sin tocar código.
+if settings.ENVIRONMENT == "development":
+    allowed_origins = ["*"]
+else:
+    allowed_origins = settings.cors_origins_list
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if settings.ENVIRONMENT == "development" else [],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -29,6 +38,7 @@ def root():
         "service": "GameConnect API",
         "status": "ok",
         "version": "0.5.0",
+        "environment": settings.ENVIRONMENT,
         "docs": "/docs",
     }
 

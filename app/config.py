@@ -1,30 +1,65 @@
 """
 Configuración central de la aplicación.
 
-Lee las variables de entorno desde .env y las expone como un objeto tipado.
-Usar Pydantic Settings nos da validación automática y autocompletado en el IDE.
+Lee las variables de entorno desde .env (en local) o desde variables de
+entorno del sistema (en producción, ej. Render). Usa Pydantic Settings
+para validación y autocompletado.
+
+Seguridad: si ENVIRONMENT == "production", exigimos que SECRET_KEY sea
+seteada explícitamente. Esto previene que un deploy quede vulnerable
+por olvidar setear el secret.
 """
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     # Base de datos
+    # En local: SQLite por defecto
+    # En producción: Render inyecta una DATABASE_URL apuntando a PostgreSQL
     DATABASE_URL: str = "sqlite:///./gameconnect.db"
 
     # Seguridad (JWT)
-    SECRET_KEY: str = "cambiame"
+    # En producción, esto DEBE ser seteado como variable de entorno
+    SECRET_KEY: str = "cambiame-en-desarrollo-solamente"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
-    # Entorno
+    # Entorno: "development" | "production"
     ENVIRONMENT: str = "development"
+
+    # CORS: orígenes permitidos para hacer requests al backend.
+    # En local solo necesitamos localhost:5173 (Vite).
+    # En producción agregamos el dominio de Vercel.
+    # Formato: "url1,url2,url3" (separadas por coma, sin espacios)
+    CORS_ORIGINS: str = "http://localhost:5173"
 
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=True,
     )
+
+    @field_validator("SECRET_KEY")
+    @classmethod
+    def secret_key_required_in_production(cls, v, info):
+        """
+        Si el entorno es producción, no permitimos que la SECRET_KEY
+        sea el valor por defecto. Esto evita deployments inseguros.
+        """
+        environment = info.data.get("ENVIRONMENT", "development")
+        if environment == "production" and v == "cambiame-en-desarrollo-solamente":
+            raise ValueError(
+                "SECRET_KEY no puede tener el valor por defecto en producción. "
+                "Generá uno único y seteálo como variable de entorno."
+            )
+        return v
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        """Convierte CORS_ORIGINS de string CSV a lista."""
+        return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
 
 
 # Instancia única que vamos a importar en toda la app
