@@ -15,6 +15,7 @@ import SearchDetailPage from './pages/SearchDetailPage'
 import MySearchesPage from './pages/MySearchesPage'
 import PendingReviewsPage from './pages/PendingReviewsPage'
 import WriteReviewPage from './pages/WriteReviewPage'
+import PublicUserPage from './pages/PublicUserPage'
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="/games" element={<GamesPage />} />
           <Route path="/searches" element={<SearchesPage />} />
           <Route path="/searches/:id" element={<SearchDetailPage />} />
+          <Route path="/users/:username" element={<PublicUserPage />} />
 
           {/* Rutas protegidas */}
           <Route

@@ -258,7 +258,13 @@ function SearchDetailPage() {
           </div>
 
           <p className="text-sm text-gray-400 mb-4">
-            Creada por <span className="text-white">{search.creator.username}</span>
+            Creada por{' '}
+            <Link
+              to={`/users/${search.creator.username}`}
+              className="text-white hover:text-primary-500 transition-colors"
+            >
+              {search.creator.username}
+            </Link>
             {search.creator.reputation_score > 0 && (
               <span className="text-gray-500 ml-2">
                 · ⭐ {search.creator.reputation_score.toFixed(1)}

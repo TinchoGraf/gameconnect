@@ -1,12 +1,5 @@
 import { Link } from 'react-router-dom'
 
-/**
- * Card de una búsqueda en el listado.
- *
- * Muestra: juego, título, creador, server, modo, roles buscados,
- * progreso (X/Y participantes), modo de unión (manual/auto).
- * Click va al detalle.
- */
 function SearchCard({ search }) {
   const isFull = search.accepted_count >= search.max_players
   const isAuto = search.join_mode === 'auto'
@@ -16,7 +9,6 @@ function SearchCard({ search }) {
       to={`/searches/${search.id}`}
       className="block bg-dark-800 border border-dark-700 rounded-lg p-5 hover:border-primary-500 transition-colors"
     >
-      {/* Header: juego + estado */}
       <div className="flex items-start justify-between mb-3">
         <div>
           <span className="text-xs text-primary-500 font-semibold uppercase">
@@ -33,7 +25,6 @@ function SearchCard({ search }) {
         </span>
       </div>
 
-      {/* Creador */}
       <p className="text-sm text-gray-400 mb-3">
         Por <span className="text-white">{search.creator.username}</span>
         {search.creator.reputation_score > 0 && (
@@ -43,7 +34,6 @@ function SearchCard({ search }) {
         )}
       </p>
 
-      {/* Detalles */}
       <div className="grid grid-cols-2 gap-2 text-xs text-gray-300 mb-3">
         <div>
           <span className="text-gray-500">Server: </span>
@@ -61,7 +51,6 @@ function SearchCard({ search }) {
         )}
       </div>
 
-      {/* Roles buscados */}
       {search.roles_needed.length > 0 && (
         <div className="mb-3">
           <p className="text-xs text-gray-500 mb-1">Roles buscados:</p>
@@ -78,7 +67,6 @@ function SearchCard({ search }) {
         </div>
       )}
 
-      {/* Indicador de modo de unión */}
       <div className="text-xs text-gray-500 pt-3 border-t border-dark-700">
         {isAuto ? '⚡ Unión automática' : '👤 El creador aprueba postulantes'}
       </div>
