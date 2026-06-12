@@ -7,16 +7,6 @@ import { useMyGameProfiles } from '../lib/useMyGameProfiles'
 import Header from '../components/Header'
 import ParticipantCard from '../components/ParticipantCard'
 
-/**
- * Página de detalle de una búsqueda. Muestra info + lista de participantes.
- *
- * Comportamiento por rol:
- * - Visitante (no logueado): solo lectura.
- * - Logueado no participante: puede unirse si cumple condiciones.
- * - Postulante pending: ve su estado y puede cancelar postulación.
- * - Accepted no-creador: ve a los demás y puede salirse.
- * - Creador: acepta/rechaza, inicia, completa, cancela.
- */
 function SearchDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -45,9 +35,21 @@ function SearchDetailPage() {
   const isSearchOpen = search?.status === 'open'
   const isSearchFull = search?.status === 'full'
   const isInProgress = search?.status === 'in_progress'
+  const isCompleted = search?.status === 'completed'
   const canStillJoin = isSearchOpen && acceptedParticipations.length < (search?.max_players || 0)
 
-  // ----- Acciones de postulante -----
+  // ¿Mi participación ya tiene la doble confirmación lista?
+  // Si soy participante (creador o aceptado) y la búsqueda está completed,
+  // muestro el botón "confirmar que jugué" hasta que ambos flags estén true.
+  const iAmParticipant = myParticipation && myParticipation.status === 'accepted'
+  const myConfirmationDone = myParticipation && (
+    isCreator
+      ? myParticipation.creator_confirmed
+      : myParticipation.participant_confirmed
+  )
+  const showConfirmPlayedButton = isCompleted && iAmParticipant && !myConfirmationDone
+
+  // ----- Acciones -----
 
   async function handleJoin() {
     if (!joinRole) {
@@ -84,8 +86,6 @@ function SearchDetailPage() {
       setActionLoading(false)
     }
   }
-
-  // ----- Acciones del creador -----
 
   async function handleAccept(userId) {
     setActionLoading(true)
@@ -138,7 +138,7 @@ function SearchDetailPage() {
 
   async function handleComplete() {
     const confirmed = window.confirm(
-      '¿Marcar la búsqueda como completada? Después de esto se podrán escribir reviews entre participantes (próxima fase).'
+      '¿Marcar la búsqueda como completada? Después de esto se podrán escribir reviews entre participantes.'
     )
     if (!confirmed) return
     setActionLoading(true)
@@ -164,12 +164,27 @@ function SearchDetailPage() {
     setActionError(null)
     try {
       await api.delete(`/searches/${id}`)
-      // Después de cancelar redirigimos al listado
       navigate('/searches')
     } catch (err) {
       console.error(err)
       const detail = err.response?.data?.detail
       setActionError(typeof detail === 'string' ? detail : 'No pudimos cancelar la búsqueda.')
+      setActionLoading(false)
+    }
+  }
+
+  // NUEVO: confirmar que la partida ocurrió
+  async function handleConfirmPlayed() {
+    setActionLoading(true)
+    setActionError(null)
+    try {
+      await api.post(`/searches/${id}/confirm-played`)
+      await refresh()
+    } catch (err) {
+      console.error(err)
+      const detail = err.response?.data?.detail
+      setActionError(typeof detail === 'string' ? detail : 'No pudimos registrar tu confirmación.')
+    } finally {
       setActionLoading(false)
     }
   }
@@ -298,6 +313,36 @@ function SearchDetailPage() {
           )}
         </div>
 
+        {/* NUEVO: panel post-partida (cuando está completed) */}
+        {showConfirmPlayedButton && (
+          <div className="bg-purple-900/30 border border-purple-700 rounded-lg p-4 mb-6">
+            <h2 className="text-lg font-semibold mb-2">🏁 La partida terminó</h2>
+            <p className="text-sm text-gray-300 mb-3">
+              Confirmá que jugaste para habilitar las reviews entre vos y los demás participantes.
+              Una vez que ambos confirmen, vas a poder escribir reviews por 7 días.
+            </p>
+            <button
+              onClick={handleConfirmPlayed}
+              disabled={actionLoading}
+              className="bg-purple-700 hover:bg-purple-600 disabled:bg-dark-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm"
+            >
+              {actionLoading ? 'Confirmando...' : '✓ Confirmar que jugué'}
+            </button>
+          </div>
+        )}
+
+        {/* Si ya confirmé y está completed: aviso de que puedo ver pending reviews */}
+        {isCompleted && iAmParticipant && myConfirmationDone && (
+          <div className="bg-purple-900/20 border border-purple-700/50 rounded-lg p-4 mb-6">
+            <p className="text-sm text-gray-300">
+              ✅ Ya confirmaste tu participación.
+              <Link to="/pending-reviews" className="text-primary-500 hover:underline ml-1">
+                Ver reviews pendientes →
+              </Link>
+            </p>
+          </div>
+        )}
+
         {/* CTA login */}
         {!isAuthenticated && isSearchOpen && (
           <div className="bg-primary-700/20 border border-primary-700 rounded-lg p-4 mb-6 text-sm">
@@ -308,7 +353,7 @@ function SearchDetailPage() {
           </div>
         )}
 
-        {/* Panel de creador: acciones de administración */}
+        {/* Panel creador */}
         {isCreator && search.status !== 'cancelled' && search.status !== 'completed' && (
           <div className="bg-dark-800 border border-primary-700 rounded-lg p-6 mb-6">
             <h2 className="text-lg font-semibold mb-3">👑 Panel del creador</h2>
@@ -364,7 +409,7 @@ function SearchDetailPage() {
         )}
 
         {/* Participación accepted */}
-        {myParticipation?.status === 'accepted' && !isCreator && (
+        {myParticipation?.status === 'accepted' && !isCreator && (isSearchOpen || isSearchFull || isInProgress) && (
           <div className="bg-green-900/30 border border-green-700 rounded-lg p-4 mb-6">
             <p className="text-sm text-green-100 mb-3">
               ✅ Estás dentro como <strong>{myParticipation.role || 'cualquier rol'}</strong>.
@@ -473,7 +518,7 @@ function SearchDetailPage() {
           )}
         </div>
 
-        {/* Pendientes: con acciones de aceptar/rechazar si soy el creador */}
+        {/* Pendientes */}
         {pendingParticipations.length > 0 && (
           <div className="bg-dark-800 border border-dark-700 rounded-lg p-6 mb-6">
             <h2 className="text-lg font-semibold mb-3">

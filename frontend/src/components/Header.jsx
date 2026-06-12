@@ -14,12 +14,10 @@ function Header() {
     <header className="bg-dark-800 border-b border-dark-700">
       <nav className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
 
-        {/* Logo */}
         <Link to="/" className="text-2xl font-bold text-white hover:text-primary-500 transition-colors">
           🎮 <span className="text-primary-500">GameConnect</span>
         </Link>
 
-        {/* Links */}
         <div className="flex items-center gap-6">
           <Link
             to="/searches"
@@ -41,6 +39,12 @@ function Header() {
                 className="text-gray-300 hover:text-white transition-colors"
               >
                 Mis búsquedas
+              </Link>
+              <Link
+                to="/pending-reviews"
+                className="text-gray-300 hover:text-white transition-colors"
+              >
+                Reviews
               </Link>
               <Link
                 to="/profile"

@@ -13,6 +13,7 @@ import SearchesPage from './pages/SearchesPage'
 import CreateSearchPage from './pages/CreateSearchPage'
 import SearchDetailPage from './pages/SearchDetailPage'
 import MySearchesPage from './pages/MySearchesPage'
+import PendingReviewsPage from './pages/PendingReviewsPage'
 
 function App() {
   return (
@@ -73,6 +74,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <MySearchesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pending-reviews"
+            element={
+              <ProtectedRoute>
+                <PendingReviewsPage />
               </ProtectedRoute>
             }
           />
