@@ -26,6 +26,7 @@ services:
     buildCommand: |
       pip install -r requirements.txt
       alembic upgrade head
+      python -m app.seed.load_games
 
     # Comando para arrancar el server con gunicorn manejando workers de uvicorn
     # --workers 2: corremos 2 procesos en paralelo (suficiente para free tier)
