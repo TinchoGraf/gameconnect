@@ -3,15 +3,14 @@ import axios from 'axios'
 /**
  * Cliente HTTP configurado para hablar con el backend de GameConnect.
  *
- * Lo importamos en cualquier componente que necesite hacer requests:
- *   import { api } from '../lib/api'
- *   const response = await api.get('/games')
+ * La baseURL se lee desde la variable de entorno VITE_API_URL.
+ * - En local: viene del archivo frontend/.env.local (por ejemplo http://localhost:8000)
+ * - En producción: viene de la config de Vercel apuntando al backend de Render
  *
- * Por ahora la baseURL apunta a localhost. Cuando deployemos
- * el backend a producción, vamos a leer esta URL desde una variable
- * de entorno (VITE_API_URL) que cambia según el ambiente.
+ * Si no hay variable seteada, usamos localhost:8000 como fallback razonable
+ * (útil cuando recién clonás el proyecto y no creaste el .env todavía).
  */
-const API_BASE_URL = 'http://localhost:8000'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -22,7 +21,6 @@ export const api = axios.create({
 
 // Interceptor: si tenemos un token guardado en localStorage,
 // lo agregamos automáticamente al header Authorization en cada request.
-// Esto va a ser clave cuando implementemos login.
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('gameconnect_token')
   if (token) {
