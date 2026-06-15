@@ -16,6 +16,7 @@ import MySearchesPage from './pages/MySearchesPage'
 import PendingReviewsPage from './pages/PendingReviewsPage'
 import WriteReviewPage from './pages/WriteReviewPage'
 import PublicUserPage from './pages/PublicUserPage'
+import NotFoundPage from './pages/NotFoundPage'
 
 function App() {
   return (
@@ -96,6 +97,8 @@ function App() {
               </ProtectedRoute>
             }
           />
+          {/* Ruta wildcard: cualquier URL no matcheada por las anteriores */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
