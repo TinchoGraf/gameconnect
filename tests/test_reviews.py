@@ -21,7 +21,7 @@ def _base_search_payload():
     return {
         "game_slug": "league-of-legends",
         "title": "Test ranked",
-        "mode": "ranked-solo",
+        "mode": "Ranked Solo/Duo",
         "server": "LAS",
         "roles_needed": ["Jungla"],
         "max_players": 5,

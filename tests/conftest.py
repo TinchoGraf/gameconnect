@@ -102,7 +102,7 @@ def second_user_headers(client):
 
 @pytest.fixture
 def loaded_games(db_session):
-    """Carga juegos para los tests."""
+    """Carga los 9 juegos para los tests."""
     games_data = [
         {
             "name": "League of Legends",
@@ -110,15 +110,83 @@ def loaded_games(db_session):
             "description": "MOBA 5v5",
             "roles": ["Top", "Jungla", "Mid", "ADC", "Support"],
             "servers": ["LAS", "LAN", "NA", "EUW", "KR"],
-            "game_modes": ["chill", "tryhard", "ranked-solo"],
+            "game_modes": ["Ranked Solo/Duo", "Ranked Flex", "Normal", "ARAM", "Chill"],
         },
         {
             "name": "Counter Strike 2",
             "slug": "counter-strike-2",
             "description": "FPS 5v5",
-            "roles": ["Entry Fragger", "AWPer", "IGL", "Support", "Lurker"],
+            "roles": ["Entry Fragger", "AWPer", "IGL", "Support", "Lurker", "Rifler"],
             "servers": ["SA", "NA-East", "EU-West"],
-            "game_modes": ["chill", "tryhard"],
+            "game_modes": ["Premier", "Competitivo", "Wingman", "Chill"],
+        },
+        {
+            "name": "Dead by Daylight",
+            "slug": "dead-by-daylight",
+            "description": "Asimétrico 4v1",
+            "roles": ["Killer", "Survivor"],
+            "servers": ["Americas", "Europe", "Asia"],
+            "game_modes": ["Ranked", "Tryhard", "Chill", "Custom"],
+        },
+        {
+            "name": "Rocket League",
+            "slug": "rocket-league",
+            "description": "Fútbol con autos",
+            "roles": ["Striker", "Midfielder", "Goalkeeper", "Flex"],
+            "servers": ["SAM", "USE", "EU"],
+            "game_modes": ["Ranked 3v3", "Ranked 2v2", "Casual", "Chill"],
+        },
+        {
+            "name": "Valorant",
+            "slug": "valorant",
+            "description": "FPS táctico 5v5 de Riot Games",
+            "roles": ["Duelist", "Sentinel", "Initiator", "Controller"],
+            "servers": ["LATAM", "NA", "BR", "EU", "KR", "JP"],
+            "game_modes": ["Competitive", "Unranked", "Spike Rush", "Deathmatch"],
+        },
+        {
+            "name": "Warzone",
+            "slug": "warzone",
+            "description": "Battle Royale de Activision",
+            "roles": ["Sniper", "Slayer", "IGL", "Flex"],
+            "servers": ["NA", "EU", "LATAM", "Asia", "OCE"],
+            "game_modes": ["BR Squads", "BR Trios", "BR Duos", "BR Solos", "Resurgence"],
+        },
+        {
+            "name": "Fortnite",
+            "slug": "fortnite",
+            "description": "Battle Royale de Epic Games",
+            "roles": ["Builder Pro", "Editor", "Box Fighter", "Box Defender", "IGL", "Flex"],
+            "servers": ["NA-East", "NA-West", "EU", "BR", "ME", "OCE", "Asia"],
+            "game_modes": ["Ranked", "Battle Royale", "Zero Build", "Squads", "Trios", "Duos"],
+        },
+        {
+            "name": "FIFA",
+            "slug": "fifa",
+            "description": "Fútbol online de EA Sports",
+            "roles": ["Delantero", "Mediocampista", "Defensor", "Arquero", "Cualquiera"],
+            "servers": ["NA", "EU", "LATAM", "Asia"],
+            "game_modes": ["Pro Clubs", "FUT Champions Co-op"],
+        },
+        {
+            "name": "GTA V Online",
+            "slug": "gta-v-online",
+            "description": "Mundo abierto online de Rockstar Games",
+            "roles": [
+                "Asaltante",
+                "Conductor / Piloto",
+                "Sigiloso / Hacker",
+                "Rolero",
+                "Negocios (CEO/MC)",
+                "Cualquiera / Flex",
+            ],
+            "servers": ["NA", "EU", "LATAM", "OCE"],
+            "game_modes": [
+                "Rol (FiveM)", "Heists", "Negocios", "Trabajos Contrato",
+                "Survival", "Carreras Públicas", "Modo Libre",
+                "Custom - Carreras", "Custom - Derby", "Custom - Caza",
+                "Custom - Captura", "Custom - Versus",
+            ],
         },
     ]
     for data in games_data:

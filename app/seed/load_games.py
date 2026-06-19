@@ -6,11 +6,9 @@ Se ejecuta con:
 
 Es idempotente: si los juegos ya existen, los actualiza en vez de duplicarlos.
 
-Los game_modes están ordenados de más competitivo a más casual — ese orden
-se preserva en el JSON y el frontend lo usa tal cual para el dropdown.
+Los game_modes están ordenados de más competitivo a más casual.
 
-IMPORTANTE: Este script asume que las tablas YA EXISTEN. La creación de tablas
-es responsabilidad de Alembic. Antes de correr el seed por primera vez:
+IMPORTANTE: Este script asume que las tablas YA EXISTEN.
     alembic upgrade head
 """
 
@@ -27,7 +25,6 @@ GAMES_DATA = [
         "description": "MOBA 5v5 de Riot Games",
         "roles": ["Top", "Jungla", "Mid", "ADC", "Support"],
         "servers": ["LAS", "LAN", "NA", "BR", "EUW", "EUNE", "KR", "JP", "OCE", "TR", "RU"],
-        # Ordenados: ranked primero, chill al final
         "game_modes": [
             "Ranked Solo/Duo",
             "Ranked Flex",
@@ -78,6 +75,87 @@ GAMES_DATA = [
             "Tournament",
             "Casual",
             "Chill",
+        ],
+    },
+    {
+        "name": "Valorant",
+        "slug": "valorant",
+        "description": "FPS táctico 5v5 de Riot Games",
+        "roles": ["Duelist", "Sentinel", "Initiator", "Controller"],
+        "servers": ["LATAM", "NA", "BR", "EU", "KR", "JP"],
+        "game_modes": [
+            "Competitive",
+            "Unranked",
+            "Spike Rush",
+            "Deathmatch",
+        ],
+    },
+    {
+        "name": "Warzone",
+        "slug": "warzone",
+        "description": "Battle Royale de Activision",
+        "roles": ["Sniper", "Slayer", "IGL", "Flex"],
+        "servers": ["NA", "EU", "LATAM", "Asia", "OCE"],
+        "game_modes": [
+            "BR Squads",
+            "BR Trios",
+            "BR Duos",
+            "BR Solos",
+            "Resurgence",
+        ],
+    },
+    {
+        "name": "Fortnite",
+        "slug": "fortnite",
+        "description": "Battle Royale de Epic Games",
+        "roles": ["Builder Pro", "Editor", "Box Fighter", "Box Defender", "IGL", "Flex"],
+        "servers": ["NA-East", "NA-West", "EU", "BR", "ME", "OCE", "Asia"],
+        "game_modes": [
+            "Ranked",
+            "Battle Royale",
+            "Zero Build",
+            "Squads",
+            "Trios",
+            "Duos",
+        ],
+    },
+    {
+        "name": "FIFA",
+        "slug": "fifa",
+        "description": "Fútbol online de EA Sports — modos cooperativos",
+        "roles": ["Delantero", "Mediocampista", "Defensor", "Arquero", "Cualquiera"],
+        "servers": ["NA", "EU", "LATAM", "Asia"],
+        "game_modes": [
+            "Pro Clubs",
+            "FUT Champions Co-op",
+        ],
+    },
+    {
+        "name": "GTA V Online",
+        "slug": "gta-v-online",
+        "description": "Mundo abierto online de Rockstar Games",
+        "roles": [
+            "Asaltante",
+            "Conductor / Piloto",
+            "Sigiloso / Hacker",
+            "Rolero",
+            "Negocios (CEO/MC)",
+            "Cualquiera / Flex",
+        ],
+        "servers": ["NA", "EU", "LATAM", "OCE"],
+        "game_modes": [
+            "Rol (FiveM)",
+            "Heists",
+            "Negocios",
+            "Trabajos Contrato",
+            "Survival",
+            "Carreras Públicas",
+            "Modo Libre",
+            "Custom - Carreras",
+            "Custom - Derby",
+            "Custom - Caza",
+            "Custom - Captura",
+            "Custom - Versus",
         ],
     },
 ]

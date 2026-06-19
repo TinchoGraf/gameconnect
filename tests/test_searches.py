@@ -20,7 +20,7 @@ def _base_search_payload():
         "game_slug": "league-of-legends",
         "title": "Buscamos jungla y supp para ranked",
         "description": "Solo Diamante o más",
-        "mode": "ranked-solo",
+        "mode": "Ranked Solo/Duo",
         "server": "LAS",
         "roles_needed": ["Jungla", "Support"],
         "max_players": 5,

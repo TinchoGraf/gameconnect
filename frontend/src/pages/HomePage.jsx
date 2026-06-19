@@ -18,11 +18,16 @@ function HomePage() {
 
   // Emojis representativos por juego (fallback visual hasta tener logos)
   const GAME_EMOJIS = {
-    'league-of-legends': '⚔️',
-    'counter-strike-2': '🎯',
-    'dead-by-daylight': '🔪',
-    'rocket-league': '🚗',
-  }
+  'league-of-legends': '⚔️',
+  'counter-strike-2': '🎯',
+  'dead-by-daylight': '🔪',
+  'rocket-league': '🚗',
+  'valorant': '🔫',
+  'warzone': '💀',
+  'fortnite': '🏗️',
+  'fifa': '⚽',
+  'gta-v-online': '🚙',
+}
 
   // ----- Vista: no logueado -----
   if (!isAuthenticated) {
