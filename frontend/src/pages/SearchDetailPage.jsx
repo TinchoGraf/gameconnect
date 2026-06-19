@@ -164,7 +164,7 @@ function SearchDetailPage() {
     setActionError(null)
     try {
       await api.delete(`/searches/${id}`)
-      navigate('/searches')
+      navigate('/my-searches')
     } catch (err) {
       console.error(err)
       const detail = err.response?.data?.detail
