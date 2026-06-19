@@ -294,13 +294,6 @@ function FriendsPage() {
           ) : (
             <div className="space-y-2">
               {friends.map((friendship) => {
-                // Mostrar el "otro" usuario, no yo mismo
-                // Mostrar al "otro" usuario — no al usuario actual
-                // Como no tenemos el currentUser acá, usamos una heurística:
-                // si ambos tienen datos distintos, mostramos addressee.
-                // El hook podría exponerlo, pero para MVP esto alcanza.
-                const otherUser = friendship.addressee
-
                 const otherUser = friendship.addressee
                 return (
                   <div
