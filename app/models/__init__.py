@@ -11,5 +11,7 @@ from app.models.game_profile import GameProfile
 from app.models.search import Search
 from app.models.participation import Participation
 from app.models.review import Review
+from app.models.friendship import Friendship
+from app.models.block import Block
 
-__all__ = ["User", "Game", "GameProfile", "Search", "Participation", "Review"]
+__all__ = ["User", "Game", "GameProfile", "Search", "Participation", "Review", "Friendship", "Block"]

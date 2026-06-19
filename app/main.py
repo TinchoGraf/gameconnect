@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import auth, game_profiles, games, reviews, searches, users
+from app.routers import auth, friends, game_profiles, games, reviews, searches, users
 
 app = FastAPI(
     title="GameConnect API",
@@ -49,3 +49,4 @@ app.include_router(game_profiles.router)
 app.include_router(searches.router)
 app.include_router(reviews.router)
 app.include_router(games.router)
+app.include_router(friends.router)
