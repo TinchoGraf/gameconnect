@@ -56,6 +56,11 @@ class GameProfile(Base):
     # Ejemplos: "Diamante II", "Faceit 10", "Iridiscente", "Gran Champion"
     rank: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
+    # Nivel de experiencia del jugador en este juego.
+    # Obligatorio al crear un perfil. Valores permitidos: Novato, Casual, Veterano, Pro.
+    # Informativo: ayuda a los demás a saber con quién van a jugar.
+    experience_level: Mapped[str | None] = mapped_column(String(20), nullable=True)
+
     # Nombre/ID de invocador o gamertag dentro de ese juego.
     # Ejemplo: "Faker#KR1" en LoL, "STEAM_0:1:..." en CS, etc.
     in_game_name: Mapped[str | None] = mapped_column(String(100), nullable=True)

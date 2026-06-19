@@ -207,6 +207,7 @@ def user_with_lol_profile(client, auth_headers, loaded_games):
             "main_role": "Mid",
             "server": "LAS",
             "rank": "Diamante",
+            "experience_level": "Veterano",
         },
         headers=auth_headers,
     )
@@ -224,6 +225,7 @@ def second_user_with_lol_profile(client, second_user_headers, loaded_games):
             "main_role": "Jungla",
             "server": "LAS",
             "rank": "Platino",
+            "experience_level": "Casual",
         },
         headers=second_user_headers,
     )

@@ -27,6 +27,7 @@ function CreateGameProfilePage() {
   const [server, setServer] = useState('')
   const [rank, setRank] = useState('')
   const [inGameName, setInGameName] = useState('')
+  const [experienceLevel, setExperienceLevel] = useState('')
 
   // Estado de UI
   const [submitting, setSubmitting] = useState(false)
@@ -96,6 +97,10 @@ function CreateGameProfilePage() {
     if (!server) {
       setError('Elegí un servidor.')
       return
+    if (!experienceLevel) {
+      setError('Elegí tu nivel de experiencia.')
+      return
+    }
     }
 
     setSubmitting(true)
@@ -107,6 +112,7 @@ function CreateGameProfilePage() {
         server,
         rank: rank || null,
         in_game_name: inGameName || null,
+        experience_level: experienceLevel,
       })
       navigate('/profile/game-profiles')
     } catch (err) {
@@ -274,6 +280,46 @@ function CreateGameProfilePage() {
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
+              </div>
+
+              {/* Nivel de experiencia */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Nivel de experiencia
+                </label>
+                <p className="text-xs text-gray-500 mb-3">
+                  Sé honesto — ayuda a encontrar compañeros compatibles.
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { value: 'Novato', desc: 'Estoy aprendiendo' },
+                    { value: 'Casual', desc: 'Juego para divertirme' },
+                    { value: 'Veterano', desc: 'Tengo experiencia' },
+                    { value: 'Pro', desc: 'Juego competitivo' },
+                  ].map((level) => (
+                    <label
+                      key={level.value}
+                      className={`flex flex-col p-3 border rounded-lg cursor-pointer transition-colors ${
+                        experienceLevel === level.value
+                          ? 'bg-primary-600/20 border-primary-500'
+                          : 'bg-dark-900 border-dark-700 hover:border-dark-600'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <input
+                          type="radio"
+                          name="experienceLevel"
+                          value={level.value}
+                          checked={experienceLevel === level.value}
+                          onChange={() => setExperienceLevel(level.value)}
+                          className="accent-primary-500"
+                        />
+                        <span className="text-sm font-semibold">{level.value}</span>
+                      </div>
+                      <span className="text-xs text-gray-400 pl-5">{level.desc}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
               {/* Rank (opcional) */}

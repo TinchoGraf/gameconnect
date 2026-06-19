@@ -4,55 +4,45 @@ import { api } from '../lib/api'
 import { useGames } from '../lib/useGames'
 import Header from '../components/Header'
 
-/**
- * Formulario para editar un GameProfile existente.
- *
- * Diferencias con CreateGameProfilePage:
- * - Recibe el slug del juego por la URL (useParams)
- * - Carga los datos actuales del perfil al montar
- * - No permite cambiar el juego (game_slug es fijo)
- * - Manda PUT en vez de POST
- */
+const EXPERIENCE_LEVELS = [
+  { value: 'Novato', desc: 'Estoy aprendiendo' },
+  { value: 'Casual', desc: 'Juego para divertirme' },
+  { value: 'Veterano', desc: 'Tengo experiencia' },
+  { value: 'Pro', desc: 'Juego competitivo' },
+]
+
 function EditGameProfilePage() {
-  // useParams() lee los parámetros dinámicos de la URL.
-  // Como definimos la ruta como "/profile/game-profiles/:slug/edit",
-  // accedemos al slug así:
   const { slug } = useParams()
   const navigate = useNavigate()
   const { games, loading: gamesLoading } = useGames()
 
-  // Datos del perfil que estamos editando
   const [profile, setProfile] = useState(null)
   const [profileLoading, setProfileLoading] = useState(true)
   const [profileError, setProfileError] = useState(null)
 
-  // Estado del formulario (igual que en CreateGameProfilePage, pero sin gameSlug)
   const [selectedRoles, setSelectedRoles] = useState([])
   const [mainRole, setMainRole] = useState('')
   const [server, setServer] = useState('')
   const [rank, setRank] = useState('')
   const [inGameName, setInGameName] = useState('')
+  const [experienceLevel, setExperienceLevel] = useState('')
 
-  // Estado de UI
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
 
-  /**
-   * Al cargar la página, traemos los datos del perfil actual.
-   * Si el slug no corresponde a un perfil del usuario, el backend devuelve 404.
-   */
   useEffect(() => {
     async function fetchProfile() {
       try {
         const response = await api.get(`/users/me/game-profiles/${slug}`)
         const data = response.data
         setProfile(data)
-        // Pre-llenamos el formulario con los datos actuales
         setSelectedRoles(data.roles)
         setMainRole(data.main_role || '')
         setServer(data.server)
         setRank(data.rank || '')
         setInGameName(data.in_game_name || '')
+        // Pre-llenar experience_level si ya tiene uno
+        setExperienceLevel(data.experience_level || '')
       } catch (err) {
         console.error(err)
         if (err.response?.status === 404) {
@@ -67,10 +57,6 @@ function EditGameProfilePage() {
     fetchProfile()
   }, [slug])
 
-  /**
-   * Datos del juego al que pertenece este perfil. Lo buscamos en la lista
-   * de juegos para saber qué roles y servers son válidos.
-   */
   const game = games.find((g) => g.slug === slug) || null
 
   function toggleRole(role) {
@@ -88,29 +74,20 @@ function EditGameProfilePage() {
     e.preventDefault()
     setError(null)
 
-    if (selectedRoles.length === 0) {
-      setError('Marcá al menos un rol.')
-      return
-    }
-    if (!mainRole) {
-      setError('Elegí cuál es tu rol principal.')
-      return
-    }
-    if (!server) {
-      setError('Elegí un servidor.')
-      return
-    }
+    if (selectedRoles.length === 0) { setError('Marcá al menos un rol.'); return }
+    if (!mainRole) { setError('Elegí cuál es tu rol principal.'); return }
+    if (!server) { setError('Elegí un servidor.'); return }
+    if (!experienceLevel) { setError('Elegí tu nivel de experiencia.'); return }
 
     setSubmitting(true)
     try {
-      // PUT con los cambios. El backend recibe solo los campos que mandamos
-      // y deja los demás como están.
       await api.put(`/users/me/game-profiles/${slug}`, {
         roles: selectedRoles,
         main_role: mainRole,
         server,
         rank: rank || null,
         in_game_name: inGameName || null,
+        experience_level: experienceLevel,
       })
       navigate('/profile/game-profiles')
     } catch (err) {
@@ -122,7 +99,6 @@ function EditGameProfilePage() {
     }
   }
 
-  // Loading
   if (profileLoading || gamesLoading) {
     return (
       <div className="min-h-screen bg-dark-900 text-white">
@@ -134,7 +110,6 @@ function EditGameProfilePage() {
     )
   }
 
-  // Error al cargar
   if (profileError) {
     return (
       <div className="min-h-screen bg-dark-900 text-white">
@@ -153,7 +128,6 @@ function EditGameProfilePage() {
     )
   }
 
-  // Si por algún motivo no encontramos el juego en la lista (debería pasar muy raramente)
   if (!game) {
     return (
       <div className="min-h-screen bg-dark-900 text-white">
@@ -177,17 +151,13 @@ function EditGameProfilePage() {
         </div>
 
         <h1 className="text-4xl font-bold mb-2">Editar perfil</h1>
-        <p className="text-gray-400 mb-6">
-          {game.name}
-        </p>
+        <p className="text-gray-400 mb-6">{game.name}</p>
 
         <form onSubmit={handleSubmit} className="bg-dark-800 border border-dark-700 rounded-lg p-6 space-y-6">
 
-          {/* Juego (read-only, no se puede cambiar) */}
+          {/* Juego (read-only) */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Juego
-            </label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Juego</label>
             <div className="bg-dark-900 border border-dark-700 rounded-lg px-4 py-2 text-gray-400">
               {game.name}
               <span className="text-xs text-gray-500 ml-2">(no se puede cambiar)</span>
@@ -271,6 +241,41 @@ function EditGameProfilePage() {
             </select>
           </div>
 
+          {/* Nivel de experiencia */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Nivel de experiencia
+            </label>
+            <p className="text-xs text-gray-500 mb-3">
+              Sé honesto — ayuda a encontrar compañeros compatibles.
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {EXPERIENCE_LEVELS.map((level) => (
+                <label
+                  key={level.value}
+                  className={`flex flex-col p-3 border rounded-lg cursor-pointer transition-colors ${
+                    experienceLevel === level.value
+                      ? 'bg-primary-600/20 border-primary-500'
+                      : 'bg-dark-900 border-dark-700 hover:border-dark-600'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <input
+                      type="radio"
+                      name="experienceLevel"
+                      value={level.value}
+                      checked={experienceLevel === level.value}
+                      onChange={() => setExperienceLevel(level.value)}
+                      className="accent-primary-500"
+                    />
+                    <span className="text-sm font-semibold">{level.value}</span>
+                  </div>
+                  <span className="text-xs text-gray-400 pl-5">{level.desc}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
           {/* Rank */}
           <div>
             <label htmlFor="rank" className="block text-sm font-medium text-gray-300 mb-2">
@@ -303,14 +308,12 @@ function EditGameProfilePage() {
             />
           </div>
 
-          {/* Error */}
           {error && (
             <div className="bg-red-900/50 border border-red-500 text-red-100 p-3 rounded-lg text-sm">
               {error}
             </div>
           )}
 
-          {/* Submit */}
           <div className="flex gap-3">
             <button
               type="submit"

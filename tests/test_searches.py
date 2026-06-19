@@ -207,6 +207,7 @@ class TestJoinSearch:
                 "roles": ["Mid"],
                 "main_role": "Mid",
                 "server": "NA",
+                "experience_level": "Casual",
             },
             headers=second_user_headers,
         )

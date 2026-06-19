@@ -23,6 +23,7 @@ VALID_LOL_PROFILE = {
     "server": "LAS",
     "rank": "Diamante II",
     "in_game_name": "TestPlayer#LAS1",
+    "experience_level": "Veterano",
 }
 
 
@@ -109,6 +110,7 @@ class TestCreateGameProfile:
             "main_role": "AWPer",
             "server": "SA",
             "rank": "Faceit 10",
+            "experience_level": "Pro",
         }
         r2 = client.post("/users/me/game-profiles", json=cs_payload, headers=auth_headers)
         assert r2.status_code == 201
@@ -245,3 +247,59 @@ class TestPublicGameProfiles:
     def test_public_list_nonexistent_user(self, client):
         response = client.get("/users/no-existe/game-profiles")
         assert response.status_code == 404
+
+# --------------------------------------------------------------------------
+# Tests de experience_level (Sesión F)
+# --------------------------------------------------------------------------
+
+class TestExperienceLevel:
+
+    def test_create_with_valid_level(self, client, auth_headers, loaded_games):
+        """Cada nivel válido debe ser aceptado."""
+        for level in ["Novato", "Casual", "Veterano", "Pro"]:
+            client.delete(
+                "/users/me/game-profiles/league-of-legends", headers=auth_headers
+            )
+            payload = {**VALID_LOL_PROFILE, "experience_level": level}
+            response = client.post(
+                "/users/me/game-profiles", json=payload, headers=auth_headers
+            )
+            assert response.status_code == 201, f"Falló con nivel: {level}"
+            assert response.json()["experience_level"] == level
+
+    def test_create_without_level_fails(self, client, auth_headers, loaded_games):
+        """experience_level es obligatorio al crear."""
+        payload = {k: v for k, v in VALID_LOL_PROFILE.items() if k != "experience_level"}
+        response = client.post(
+            "/users/me/game-profiles", json=payload, headers=auth_headers
+        )
+        assert response.status_code == 422
+
+    def test_create_with_invalid_level_fails(self, client, auth_headers, loaded_games):
+        """Un nivel inventado debe ser rechazado con mensaje claro."""
+        payload = {**VALID_LOL_PROFILE, "experience_level": "Semipro"}
+        response = client.post(
+            "/users/me/game-profiles", json=payload, headers=auth_headers
+        )
+        assert response.status_code == 422
+        assert "Semipro" in response.json()["detail"][0]["msg"]
+
+    def test_update_experience_level(self, client, auth_headers, loaded_games):
+        """Se puede actualizar el nivel de experiencia."""
+        client.post("/users/me/game-profiles", json=VALID_LOL_PROFILE, headers=auth_headers)
+        response = client.put(
+            "/users/me/game-profiles/league-of-legends",
+            json={"experience_level": "Pro"},
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
+        assert response.json()["experience_level"] == "Pro"
+
+    def test_experience_level_in_response(self, client, auth_headers, loaded_games):
+        """El campo aparece en la respuesta del GET."""
+        client.post("/users/me/game-profiles", json=VALID_LOL_PROFILE, headers=auth_headers)
+        response = client.get(
+            "/users/me/game-profiles/league-of-legends", headers=auth_headers
+        )
+        assert response.status_code == 200
+        assert response.json()["experience_level"] == "Veterano"

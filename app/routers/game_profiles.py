@@ -153,6 +153,7 @@ def create_my_game_profile(
         server=data.server,
         rank=data.rank,
         in_game_name=data.in_game_name,
+        experience_level=data.experience_level,
     )
     db.add(profile)
     db.commit()

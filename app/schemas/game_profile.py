@@ -2,27 +2,26 @@
 Schemas Pydantic para el recurso GameProfile.
 
 Un GameProfile representa los datos específicos de un usuario para un juego:
-qué roles juega, en qué servidor, con qué rango, su nombre in-game.
+qué roles juega, en qué servidor, con qué rango, su nombre in-game y
+su nivel de experiencia en ese juego.
 
 Las validaciones que dependen del juego (que un rol exista en ese juego,
 que un servidor sea válido) se hacen en el router porque necesitan acceso
-a la BD. Las validaciones puramente estructurales (que main_role esté en
-roles, que la lista no esté vacía) van acá en el schema.
+a la BD. Las validaciones puramente estructurales van acá.
 """
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+# Valores válidos para el nivel de experiencia
+VALID_EXPERIENCE_LEVELS = ["Novato", "Casual", "Veterano", "Pro"]
 
-# --------------------------------------------------------------------------
-# Entradas
-# --------------------------------------------------------------------------
 
 class GameProfileCreate(BaseModel):
     """Datos para crear un perfil de juego."""
 
     game_slug: str = Field(
         ...,
-        description="Slug del juego (ej: 'league-of-legends'). Debe ser uno de los juegos soportados.",
+        description="Slug del juego (ej: 'league-of-legends').",
     )
     roles: list[str] = Field(
         ...,
@@ -35,7 +34,7 @@ class GameProfileCreate(BaseModel):
     )
     server: str = Field(
         ...,
-        description="Servidor donde juega. Debe ser uno de los servidores válidos del juego.",
+        description="Servidor donde juega.",
     )
     rank: str | None = Field(
         None,
@@ -47,10 +46,23 @@ class GameProfileCreate(BaseModel):
         max_length=100,
         description="Nombre o tag del usuario dentro del juego.",
     )
+    experience_level: str = Field(
+        ...,
+        description=f"Nivel de experiencia. Uno de: {VALID_EXPERIENCE_LEVELS}",
+    )
+
+    @field_validator("experience_level")
+    @classmethod
+    def experience_level_must_be_valid(cls, v: str) -> str:
+        if v not in VALID_EXPERIENCE_LEVELS:
+            raise ValueError(
+                f"Nivel de experiencia inválido: '{v}'. "
+                f"Debe ser uno de: {VALID_EXPERIENCE_LEVELS}"
+            )
+        return v
 
     @model_validator(mode="after")
     def main_role_must_be_in_roles(self):
-        """El main_role tiene que estar dentro de la lista de roles que juega."""
         if self.main_role not in self.roles:
             raise ValueError(
                 f"main_role '{self.main_role}' debe estar incluido en roles: {self.roles}"
@@ -62,8 +74,6 @@ class GameProfileUpdate(BaseModel):
     """
     Datos para actualizar un perfil existente.
     Todos los campos son opcionales: el usuario solo manda lo que quiere cambiar.
-
-    Nota: game_slug no se puede cambiar. Si querés otro juego, creás otro perfil.
     """
 
     roles: list[str] | None = Field(None, min_length=1)
@@ -71,14 +81,20 @@ class GameProfileUpdate(BaseModel):
     server: str | None = None
     rank: str | None = Field(None, max_length=50)
     in_game_name: str | None = Field(None, max_length=100)
+    experience_level: str | None = None
+
+    @field_validator("experience_level")
+    @classmethod
+    def experience_level_must_be_valid(cls, v: str | None) -> str | None:
+        if v is not None and v not in VALID_EXPERIENCE_LEVELS:
+            raise ValueError(
+                f"Nivel de experiencia inválido: '{v}'. "
+                f"Debe ser uno de: {VALID_EXPERIENCE_LEVELS}"
+            )
+        return v
 
     @model_validator(mode="after")
     def main_role_consistency(self):
-        """
-        Si actualizan main_role y roles al mismo tiempo, validar coherencia.
-        Si actualizan solo uno de los dos, la validación final se hace en el router
-        (necesita el valor actual del perfil para comparar).
-        """
         if self.main_role is not None and self.roles is not None:
             if self.main_role not in self.roles:
                 raise ValueError(
@@ -87,16 +103,8 @@ class GameProfileUpdate(BaseModel):
         return self
 
 
-# --------------------------------------------------------------------------
-# Salidas
-# --------------------------------------------------------------------------
-
 class GameProfileGameInfo(BaseModel):
-    """Info resumida del juego, embebida en GameProfileOut.
-
-    Permite que el frontend muestre directamente el nombre y slug del juego
-    sin tener que hacer otra request.
-    """
+    """Info resumida del juego, embebida en GameProfileOut."""
 
     id: int
     name: str
@@ -116,5 +124,6 @@ class GameProfileOut(BaseModel):
     server: str
     rank: str | None
     in_game_name: str | None
+    experience_level: str | None
 
     model_config = ConfigDict(from_attributes=True)
