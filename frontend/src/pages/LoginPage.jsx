@@ -9,7 +9,7 @@ function LoginPage() {
   const { loadCurrentUser } = useAuth()
 
   // Si nos redirigieron acá desde una ruta protegida, guardamos cuál era
-  const redirectTo = location.state?.from || '/games'
+  const redirectTo = location.state?.from || '/'
 
   const justRegistered = location.state?.justRegistered
   const preFilledUsername = location.state?.username || ''
