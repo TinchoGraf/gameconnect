@@ -1,0 +1,502 @@
+{
+  "C:\\dev\\gameconnect\\.claude\\settings.json": {
+    "mtime": 1781821582.231416,
+    "ast_hash": "7bf81dca0376bde3a32244b82bc7cbc0",
+    "semantic_hash": "7bf81dca0376bde3a32244b82bc7cbc0"
+  },
+  "C:\\dev\\gameconnect\\alembic\\env.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "159be34cfb3c2d6f7003e00e7444482a",
+    "semantic_hash": "159be34cfb3c2d6f7003e00e7444482a"
+  },
+  "C:\\dev\\gameconnect\\alembic\\versions\\2026_06_08_2236-86277245427b_initial_schema.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "2ce941246e3d8571b1f710d176700a1c",
+    "semantic_hash": "2ce941246e3d8571b1f710d176700a1c"
+  },
+  "C:\\dev\\gameconnect\\app\\__init__.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\dev\\gameconnect\\app\\config.py": {
+    "mtime": 1781306036.7740507,
+    "ast_hash": "d2cf39dbf12a38937b767fd21fdedf03",
+    "semantic_hash": "d2cf39dbf12a38937b767fd21fdedf03"
+  },
+  "C:\\dev\\gameconnect\\app\\core\\__init__.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\dev\\gameconnect\\app\\core\\dependencies.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "5336e0ffc799184d5710fb1c1c433610",
+    "semantic_hash": "5336e0ffc799184d5710fb1c1c433610"
+  },
+  "C:\\dev\\gameconnect\\app\\core\\reputation.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "3ec44fe7e1efbfabe441d4de3c2da437",
+    "semantic_hash": "3ec44fe7e1efbfabe441d4de3c2da437"
+  },
+  "C:\\dev\\gameconnect\\app\\core\\security.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "58d7228ed5531bb6c5fcfefee025bc9f",
+    "semantic_hash": "58d7228ed5531bb6c5fcfefee025bc9f"
+  },
+  "C:\\dev\\gameconnect\\app\\database.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "1dbcaf59fb9316d968c3b37583f2c362",
+    "semantic_hash": "1dbcaf59fb9316d968c3b37583f2c362"
+  },
+  "C:\\dev\\gameconnect\\app\\main.py": {
+    "mtime": 1781306084.0100172,
+    "ast_hash": "6396d106b676fbeafd7f5b8f565d5725",
+    "semantic_hash": "6396d106b676fbeafd7f5b8f565d5725"
+  },
+  "C:\\dev\\gameconnect\\app\\models\\__init__.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "59b9e910571b44b4a14676e66517dd31",
+    "semantic_hash": "59b9e910571b44b4a14676e66517dd31"
+  },
+  "C:\\dev\\gameconnect\\app\\models\\game.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "39634a92350ee09cb331d8d10ce6148e",
+    "semantic_hash": "39634a92350ee09cb331d8d10ce6148e"
+  },
+  "C:\\dev\\gameconnect\\app\\models\\game_profile.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "d0336b432c1233c50ddd70040e98c295",
+    "semantic_hash": "d0336b432c1233c50ddd70040e98c295"
+  },
+  "C:\\dev\\gameconnect\\app\\models\\participation.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "6d5f3ad089e77028d201ba38599a60f3",
+    "semantic_hash": "6d5f3ad089e77028d201ba38599a60f3"
+  },
+  "C:\\dev\\gameconnect\\app\\models\\review.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "c9e9ac811ba3a9b80a48937bccfe5f95",
+    "semantic_hash": "c9e9ac811ba3a9b80a48937bccfe5f95"
+  },
+  "C:\\dev\\gameconnect\\app\\models\\search.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "75b5cc1800c2eb36fe618066e009ce9b",
+    "semantic_hash": "75b5cc1800c2eb36fe618066e009ce9b"
+  },
+  "C:\\dev\\gameconnect\\app\\models\\user.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "abaacd0f1c08f8e748896712470770c4",
+    "semantic_hash": "abaacd0f1c08f8e748896712470770c4"
+  },
+  "C:\\dev\\gameconnect\\app\\routers\\__init__.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\dev\\gameconnect\\app\\routers\\auth.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "fd9d6e7bd341df89e7d8a183c7b50f73",
+    "semantic_hash": "fd9d6e7bd341df89e7d8a183c7b50f73"
+  },
+  "C:\\dev\\gameconnect\\app\\routers\\game_profiles.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "f5ed7af3864c5e4c85917125f6626efc",
+    "semantic_hash": "f5ed7af3864c5e4c85917125f6626efc"
+  },
+  "C:\\dev\\gameconnect\\app\\routers\\games.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "a559c1408759d2bb04768574faf857a4",
+    "semantic_hash": "a559c1408759d2bb04768574faf857a4"
+  },
+  "C:\\dev\\gameconnect\\app\\routers\\reviews.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "883fda1bcbb3eb5d6eb7d05a7afde13e",
+    "semantic_hash": "883fda1bcbb3eb5d6eb7d05a7afde13e"
+  },
+  "C:\\dev\\gameconnect\\app\\routers\\searches.py": {
+    "mtime": 1781220879.9782014,
+    "ast_hash": "7bb40d6dccc04533c8e6e08f1dcbf753",
+    "semantic_hash": "7bb40d6dccc04533c8e6e08f1dcbf753"
+  },
+  "C:\\dev\\gameconnect\\app\\routers\\users.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "1a1f7ed903b2b4c68ebf787599f37137",
+    "semantic_hash": "1a1f7ed903b2b4c68ebf787599f37137"
+  },
+  "C:\\dev\\gameconnect\\app\\schemas\\__init__.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\dev\\gameconnect\\app\\schemas\\game.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "122086724f4f4be13fa7ba786f1e63bc",
+    "semantic_hash": "122086724f4f4be13fa7ba786f1e63bc"
+  },
+  "C:\\dev\\gameconnect\\app\\schemas\\game_profile.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "769a8f458d807cacddca3e3262cd9df8",
+    "semantic_hash": "769a8f458d807cacddca3e3262cd9df8"
+  },
+  "C:\\dev\\gameconnect\\app\\schemas\\participation.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "04fb61bea05d1add3563a48ff612e1ca",
+    "semantic_hash": "04fb61bea05d1add3563a48ff612e1ca"
+  },
+  "C:\\dev\\gameconnect\\app\\schemas\\review.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "dc69ba36b8877c00293a6b2093019697",
+    "semantic_hash": "dc69ba36b8877c00293a6b2093019697"
+  },
+  "C:\\dev\\gameconnect\\app\\schemas\\search.py": {
+    "mtime": 1781220771.8025403,
+    "ast_hash": "4e104410042f79b855aaae6af7acd90c",
+    "semantic_hash": "4e104410042f79b855aaae6af7acd90c"
+  },
+  "C:\\dev\\gameconnect\\app\\schemas\\user.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "ce35438ae2d6d1c95bf24c84f0c02ff3",
+    "semantic_hash": "ce35438ae2d6d1c95bf24c84f0c02ff3"
+  },
+  "C:\\dev\\gameconnect\\app\\seed\\__init__.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\dev\\gameconnect\\app\\seed\\load_games.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "05a0c13dcc1ead7bb16762502299b97d",
+    "semantic_hash": "05a0c13dcc1ead7bb16762502299b97d"
+  },
+  "C:\\dev\\gameconnect\\frontend\\eslint.config.js": {
+    "mtime": 1778536674.159188,
+    "ast_hash": "3aa4b57d7f08181d86bde52a4dcb7f22",
+    "semantic_hash": "3aa4b57d7f08181d86bde52a4dcb7f22"
+  },
+  "C:\\dev\\gameconnect\\frontend\\package.json": {
+    "mtime": 1781047098.4904716,
+    "ast_hash": "3f861860977d1bf6a04814289a50f0ca",
+    "semantic_hash": "3f861860977d1bf6a04814289a50f0ca"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\App.jsx": {
+    "mtime": 1781565060.8173876,
+    "ast_hash": "87419b9d67de620a9a2f80049576804f",
+    "semantic_hash": "87419b9d67de620a9a2f80049576804f"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\components\\GameCard.jsx": {
+    "mtime": 1781057042.5114899,
+    "ast_hash": "dd326e995a67b262281186cf2d42f2a2",
+    "semantic_hash": "dd326e995a67b262281186cf2d42f2a2"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\components\\GameProfileCard.jsx": {
+    "mtime": 1781126919.6942766,
+    "ast_hash": "5af6620cddbe9faa520aeb2984c8eb64",
+    "semantic_hash": "5af6620cddbe9faa520aeb2984c8eb64"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\components\\Header.jsx": {
+    "mtime": 1781288352.1372254,
+    "ast_hash": "c72bb78891aba7673fa8e0b1a41209dd",
+    "semantic_hash": "c72bb78891aba7673fa8e0b1a41209dd"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\components\\ParticipantCard.jsx": {
+    "mtime": 1781219945.746779,
+    "ast_hash": "c4e5ad90ead9b2eca4ab2919f9a94caf",
+    "semantic_hash": "c4e5ad90ead9b2eca4ab2919f9a94caf"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\components\\ParticipationsList.jsx": {
+    "mtime": 1781218353.1346443,
+    "ast_hash": "60eda30f05b632a0ad90af358e108ce9",
+    "semantic_hash": "60eda30f05b632a0ad90af358e108ce9"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\components\\ProtectedRoute.jsx": {
+    "mtime": 1781125563.9885602,
+    "ast_hash": "f25e25698674374a1d47154a71d1720d",
+    "semantic_hash": "f25e25698674374a1d47154a71d1720d"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\components\\ReviewCard.jsx": {
+    "mtime": 1781289498.3714657,
+    "ast_hash": "e033d76b363efbe9873471f09d0c2cd9",
+    "semantic_hash": "e033d76b363efbe9873471f09d0c2cd9"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\components\\SearchCard.jsx": {
+    "mtime": 1781289547.841434,
+    "ast_hash": "1cd2518c7d12ad3f015ef47aad154978",
+    "semantic_hash": "1cd2518c7d12ad3f015ef47aad154978"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\components\\StarRating.jsx": {
+    "mtime": 1781288889.594234,
+    "ast_hash": "d09fecdfea729943983f3362d7082d33",
+    "semantic_hash": "d09fecdfea729943983f3362d7082d33"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\lib\\AuthContext.jsx": {
+    "mtime": 1781125557.9840634,
+    "ast_hash": "1b52ba9cbbc946bec3a9353b3a954c1b",
+    "semantic_hash": "1b52ba9cbbc946bec3a9353b3a954c1b"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\lib\\api.js": {
+    "mtime": 1781322743.1682918,
+    "ast_hash": "f52d6583386d1a7d74607b086ca1bb4d",
+    "semantic_hash": "f52d6583386d1a7d74607b086ca1bb4d"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\lib\\useGames.js": {
+    "mtime": 1781202210.5677123,
+    "ast_hash": "79c1a475c66d7e20b0c531a26cf6b464",
+    "semantic_hash": "79c1a475c66d7e20b0c531a26cf6b464"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\lib\\useMyGameProfiles.js": {
+    "mtime": 1781126982.716119,
+    "ast_hash": "89b4c9a41f20a7ab7046e08723772b65",
+    "semantic_hash": "89b4c9a41f20a7ab7046e08723772b65"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\lib\\useMySearches.js": {
+    "mtime": 1781221308.3576877,
+    "ast_hash": "775ce01cd0a2bc2012462899dc3c3f9c",
+    "semantic_hash": "775ce01cd0a2bc2012462899dc3c3f9c"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\lib\\usePendingReviews.js": {
+    "mtime": 1781288301.1623223,
+    "ast_hash": "c875bafd4ddfabdfb8bb20c45d0588da",
+    "semantic_hash": "c875bafd4ddfabdfb8bb20c45d0588da"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\lib\\usePublicUser.js": {
+    "mtime": 1781289483.106302,
+    "ast_hash": "16c66855d0fd4ec32e5be6bf5f710aab",
+    "semantic_hash": "16c66855d0fd4ec32e5be6bf5f710aab"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\lib\\useSearch.js": {
+    "mtime": 1781218331.2411087,
+    "ast_hash": "1774afdd8daa38eff27070da315cfe1a",
+    "semantic_hash": "1774afdd8daa38eff27070da315cfe1a"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\lib\\useSearchDetail.js": {
+    "mtime": 1781219924.7729213,
+    "ast_hash": "96edb86cb8a2a37d88d4340646cd893e",
+    "semantic_hash": "96edb86cb8a2a37d88d4340646cd893e"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\lib\\useSearches.js": {
+    "mtime": 1781204199.6953301,
+    "ast_hash": "db0497f4a1255b91ffe71b24fcc3d898",
+    "semantic_hash": "db0497f4a1255b91ffe71b24fcc3d898"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\main.jsx": {
+    "mtime": 1781046964.426097,
+    "ast_hash": "7659180e125ef2ae58796d5eda861912",
+    "semantic_hash": "7659180e125ef2ae58796d5eda861912"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\pages\\CreateGameProfilePage.jsx": {
+    "mtime": 1781202228.3696167,
+    "ast_hash": "3ec118e4b322225e22781f7e4be8e9aa",
+    "semantic_hash": "3ec118e4b322225e22781f7e4be8e9aa"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\pages\\CreateSearchPage.jsx": {
+    "mtime": 1781217894.0225315,
+    "ast_hash": "fe88b71ba8c466118161d3377499355f",
+    "semantic_hash": "fe88b71ba8c466118161d3377499355f"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\pages\\EditGameProfilePage.jsx": {
+    "mtime": 1781203741.0418472,
+    "ast_hash": "01360bc9689a1a66946f0351cf74741a",
+    "semantic_hash": "01360bc9689a1a66946f0351cf74741a"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\pages\\GameProfilesPage.jsx": {
+    "mtime": 1781127006.4982646,
+    "ast_hash": "f77f0932bce0cd1ed0d8ce79570b00bc",
+    "semantic_hash": "f77f0932bce0cd1ed0d8ce79570b00bc"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\pages\\GamesPage.jsx": {
+    "mtime": 1781124867.3398979,
+    "ast_hash": "f19183b082135c62bbd39392a89af2e4",
+    "semantic_hash": "f19183b082135c62bbd39392a89af2e4"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\pages\\HomePage.jsx": {
+    "mtime": 1781124770.006206,
+    "ast_hash": "8234b26eb505a3628099468321a89efd",
+    "semantic_hash": "8234b26eb505a3628099468321a89efd"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\pages\\LoginPage.jsx": {
+    "mtime": 1781125814.5054028,
+    "ast_hash": "9addf2894bafdbb193b4a4c3833923a3",
+    "semantic_hash": "9addf2894bafdbb193b4a4c3833923a3"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\pages\\MySearchesPage.jsx": {
+    "mtime": 1781221326.4182703,
+    "ast_hash": "12257718eaa851d81251613494bbaab8",
+    "semantic_hash": "12257718eaa851d81251613494bbaab8"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\pages\\NotFoundPage.jsx": {
+    "mtime": 1781564975.407381,
+    "ast_hash": "dc99654fc65199b43e648c2624abeab7",
+    "semantic_hash": "dc99654fc65199b43e648c2624abeab7"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\pages\\PendingReviewsPage.jsx": {
+    "mtime": 1781288323.316938,
+    "ast_hash": "50b81b18832b4ab9ac1dca050867895f",
+    "semantic_hash": "50b81b18832b4ab9ac1dca050867895f"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\pages\\ProfilePage.jsx": {
+    "mtime": 1781127021.943121,
+    "ast_hash": "f240fe695624f73e8a33adf3e7ea29f8",
+    "semantic_hash": "f240fe695624f73e8a33adf3e7ea29f8"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\pages\\PublicUserPage.jsx": {
+    "mtime": 1781289515.440811,
+    "ast_hash": "58ee04599277f59e3c7414c5c8847cd5",
+    "semantic_hash": "58ee04599277f59e3c7414c5c8847cd5"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\pages\\RegisterPage.jsx": {
+    "mtime": 1781125030.3489802,
+    "ast_hash": "ca2f442b57b5e29140666334e3444bdd",
+    "semantic_hash": "ca2f442b57b5e29140666334e3444bdd"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\pages\\SearchDetailPage.jsx": {
+    "mtime": 1781289723.7210157,
+    "ast_hash": "f3101c8c770297822b8edf10f5013c74",
+    "semantic_hash": "f3101c8c770297822b8edf10f5013c74"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\pages\\SearchesPage.jsx": {
+    "mtime": 1781204248.783765,
+    "ast_hash": "b71d821003cdd923466ed0478f8091fb",
+    "semantic_hash": "b71d821003cdd923466ed0478f8091fb"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\pages\\WriteReviewPage.jsx": {
+    "mtime": 1781288909.6696396,
+    "ast_hash": "e1c12f904884747739edebe379fd7ab6",
+    "semantic_hash": "e1c12f904884747739edebe379fd7ab6"
+  },
+  "C:\\dev\\gameconnect\\frontend\\vercel.json": {
+    "mtime": 1781564833.73491,
+    "ast_hash": "0db7ccb3aff36e97aa469126e9e17f99",
+    "semantic_hash": "0db7ccb3aff36e97aa469126e9e17f99"
+  },
+  "C:\\dev\\gameconnect\\frontend\\vite.config.js": {
+    "mtime": 1781047111.1686702,
+    "ast_hash": "0b6ff1849f6279b11b8bc5fe648fd706",
+    "semantic_hash": "0b6ff1849f6279b11b8bc5fe648fd706"
+  },
+  "C:\\dev\\gameconnect\\tests\\__init__.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\dev\\gameconnect\\tests\\conftest.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "2c985e48c66d70773b1a006b1d1db1e4",
+    "semantic_hash": "2c985e48c66d70773b1a006b1d1db1e4"
+  },
+  "C:\\dev\\gameconnect\\tests\\test_auth.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "fb365c771e5d6335587bca00e690dcc1",
+    "semantic_hash": "fb365c771e5d6335587bca00e690dcc1"
+  },
+  "C:\\dev\\gameconnect\\tests\\test_game_profiles.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "a2d4f65008771dd5340deffa78ac834c",
+    "semantic_hash": "a2d4f65008771dd5340deffa78ac834c"
+  },
+  "C:\\dev\\gameconnect\\tests\\test_main.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "d434924687be95933bbe8c60672b4767",
+    "semantic_hash": "d434924687be95933bbe8c60672b4767"
+  },
+  "C:\\dev\\gameconnect\\tests\\test_reviews.py": {
+    "mtime": 1780960339.0,
+    "ast_hash": "727280df9b67a085b1abb36f9211625a",
+    "semantic_hash": "727280df9b67a085b1abb36f9211625a"
+  },
+  "C:\\dev\\gameconnect\\tests\\test_searches.py": {
+    "mtime": 1781220922.8609855,
+    "ast_hash": "57dc2067571ee009541093c8a2be0027",
+    "semantic_hash": "57dc2067571ee009541093c8a2be0027"
+  },
+  "C:\\dev\\gameconnect\\CLAUDE.md": {
+    "mtime": 1781821582.2294164,
+    "ast_hash": "8a6643a420fdad6bfb583523bc6cef16",
+    "semantic_hash": "8a6643a420fdad6bfb583523bc6cef16"
+  },
+  "C:\\dev\\gameconnect\\FASE_2_INTEGRACION.md": {
+    "mtime": 1780607292.0,
+    "ast_hash": "ee139c521ca304deca06c41233deeea9",
+    "semantic_hash": "ee139c521ca304deca06c41233deeea9"
+  },
+  "C:\\dev\\gameconnect\\FASE_3_INTEGRACION.md": {
+    "mtime": 1780610115.0,
+    "ast_hash": "526de91bcdb4958f36e5cbfb1ed32efa",
+    "semantic_hash": "526de91bcdb4958f36e5cbfb1ed32efa"
+  },
+  "C:\\dev\\gameconnect\\FASE_4_5_INTEGRACION.md": {
+    "mtime": 1780958326.0,
+    "ast_hash": "d52fdd0bb92f93c04984bf5cbe3a5c21",
+    "semantic_hash": "d52fdd0bb92f93c04984bf5cbe3a5c21"
+  },
+  "C:\\dev\\gameconnect\\FASE_4_INTEGRACION.md": {
+    "mtime": 1780611452.0,
+    "ast_hash": "afee419fc3c72f69b164a44a03a66d12",
+    "semantic_hash": "afee419fc3c72f69b164a44a03a66d12"
+  },
+  "C:\\dev\\gameconnect\\FASE_5_INTEGRACION.md": {
+    "mtime": 1780960339.0,
+    "ast_hash": "00a6f0f64e4bf6fed1e561cec8546680",
+    "semantic_hash": "00a6f0f64e4bf6fed1e561cec8546680"
+  },
+  "C:\\dev\\gameconnect\\GETTING_STARTED.md": {
+    "mtime": 1780960339.0,
+    "ast_hash": "648e2fe5e41cdaf53472d1c195e58a8c",
+    "semantic_hash": "648e2fe5e41cdaf53472d1c195e58a8c"
+  },
+  "C:\\dev\\gameconnect\\README.md": {
+    "mtime": 1781324296.942427,
+    "ast_hash": "fc648dd41660092f624004a1e4b0bf50",
+    "semantic_hash": "fc648dd41660092f624004a1e4b0bf50"
+  },
+  "C:\\dev\\gameconnect\\TODO.md": {
+    "mtime": 1781325018.588399,
+    "ast_hash": "1a304260017c1265f15afb15252e762e",
+    "semantic_hash": "1a304260017c1265f15afb15252e762e"
+  },
+  "C:\\dev\\gameconnect\\frontend\\README.md": {
+    "mtime": 1778536674.33958,
+    "ast_hash": "a28dc4cb878325f3e9e5649f3e1469ac",
+    "semantic_hash": "a28dc4cb878325f3e9e5649f3e1469ac"
+  },
+  "C:\\dev\\gameconnect\\frontend\\index.html": {
+    "mtime": 1781045120.7502747,
+    "ast_hash": "89150e536c4a99f73625f46f41f0f437",
+    "semantic_hash": "89150e536c4a99f73625f46f41f0f437"
+  },
+  "C:\\dev\\gameconnect\\render.yaml": {
+    "mtime": 1781311462.517315,
+    "ast_hash": "441ae3c17b45e35c22de42a8d5191094",
+    "semantic_hash": "441ae3c17b45e35c22de42a8d5191094"
+  },
+  "C:\\dev\\gameconnect\\requirements.txt": {
+    "mtime": 1781305955.3868105,
+    "ast_hash": "85d83b9e58701c92d54b0c3787fb3dcd",
+    "semantic_hash": "85d83b9e58701c92d54b0c3787fb3dcd"
+  },
+  "C:\\dev\\gameconnect\\frontend\\public\\favicon.svg": {
+    "mtime": 1778536674.4067907,
+    "ast_hash": "7e840862161341271697daa99a40d76b",
+    "semantic_hash": "7e840862161341271697daa99a40d76b"
+  },
+  "C:\\dev\\gameconnect\\frontend\\public\\icons.svg": {
+    "mtime": 1778536674.5578105,
+    "ast_hash": "3b4fcfcf393eca4d264dca4a4663bc37",
+    "semantic_hash": "3b4fcfcf393eca4d264dca4a4663bc37"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\assets\\hero.png": {
+    "mtime": 1778536674.3568716,
+    "ast_hash": "aead493361b27e7510691c5d7072dfc1",
+    "semantic_hash": "aead493361b27e7510691c5d7072dfc1"
+  },
+  "C:\\dev\\gameconnect\\frontend\\src\\assets\\vite.svg": {
+    "mtime": 1778536674.7044713,
+    "ast_hash": "9960a24288958394ac50e57ff638b036",
+    "semantic_hash": "9960a24288958394ac50e57ff638b036"
+  },
+  "C:\\dev\\gameconnect\\.claude\\settings.local.json": {
+    "mtime": 1781823447.4899888,
+    "ast_hash": "1e0cc884a10e126564831e52dcd07fa1",
+    "semantic_hash": "1e0cc884a10e126564831e52dcd07fa1"
+  }
+}

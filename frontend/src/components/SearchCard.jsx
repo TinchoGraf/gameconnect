@@ -21,7 +21,10 @@ function SearchCard({ search }) {
         <span className={`text-xs px-2 py-1 rounded whitespace-nowrap ${
           isFull ? 'bg-amber-900/40 text-amber-300' : 'bg-green-900/40 text-green-300'
         }`}>
-          {search.accepted_count}/{search.max_players}
+          {isFull
+            ? '¡Equipo completo!'
+            : `Faltan ${search.max_players - search.accepted_count} de ${search.max_players - 1}`
+          }
         </span>
       </div>
 

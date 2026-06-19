@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useGames } from '../lib/useGames'
 import { useMyGameProfiles } from '../lib/useMyGameProfiles'
@@ -8,51 +8,52 @@ import Header from '../components/Header'
 /**
  * Formulario para crear una nueva búsqueda (Search).
  *
+ * Cambios en Sesión A:
+ * - Acepta ?game_slug= en la URL para pre-seleccionar el juego (desde home)
+ * - Modo de juego se muestra ANTES de descripción
+ * - Label del modo es dinámico: "Modo de [Nombre del juego]"
+ * - Campo renombrado: "¿Cuántos jugadores más buscás?" (sin contar al creador)
+ *   El frontend suma +1 antes de mandar al backend (que sigue usando max_players)
+ *
  * Reglas de negocio (validadas también en el backend):
  * - Solo podés crear búsquedas de juegos donde tenés GameProfile
- * - El server de la búsqueda DEBE coincidir con el server de tu perfil
- *   (por eso lo derivamos automáticamente y no lo dejamos elegir)
+ * - El server DEBE coincidir con el server de tu perfil
  * - El modo debe ser uno de Game.game_modes
  * - Los roles_needed deben ser válidos para el juego
  */
 function CreateSearchPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
   const { games, loading: gamesLoading } = useGames()
   const { profiles: myProfiles, loading: profilesLoading } = useMyGameProfiles()
 
-  // Estado del formulario
-  const [gameSlug, setGameSlug] = useState('')
+  // Si vienen desde la home con ?game_slug=..., pre-seleccionamos ese juego
+  const preselectedSlug = searchParams.get('game_slug') || ''
+
+  const [gameSlug, setGameSlug] = useState(preselectedSlug)
   const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
   const [mode, setMode] = useState('')
+  const [description, setDescription] = useState('')
   const [rolesNeeded, setRolesNeeded] = useState([])
-  const [maxPlayers, setMaxPlayers] = useState(5)
+  // playersNeeded = cuántos más se buscan (SIN contar al creador)
+  // Al mandar al backend sumamos +1
+  const [playersNeeded, setPlayersNeeded] = useState(4)
   const [minRank, setMinRank] = useState('')
   const [joinMode, setJoinMode] = useState('manual')
 
-  // Estado de UI
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
 
-  /**
-   * El perfil del usuario para el juego elegido.
-   * Si no eligió juego, es null. Si eligió, contiene server, roles, etc.
-   */
   const myProfileForGame = useMemo(() => {
     if (!gameSlug) return null
     return myProfiles.find((p) => p.game.slug === gameSlug) || null
   }, [myProfiles, gameSlug])
 
-  /**
-   * Datos del juego elegido (sus roles, servers, modos disponibles).
-   */
   const selectedGame = useMemo(() => {
     return games.find((g) => g.slug === gameSlug) || null
   }, [games, gameSlug])
 
-  /**
-   * Cambiar de juego limpia todos los campos derivados.
-   */
   function handleGameChange(e) {
     setGameSlug(e.target.value)
     setMode('')
@@ -71,26 +72,11 @@ function CreateSearchPage() {
     e.preventDefault()
     setError(null)
 
-    if (!gameSlug) {
-      setError('Elegí un juego.')
-      return
-    }
-    if (!myProfileForGame) {
-      setError('Necesitás tener un perfil de ese juego antes de crear una búsqueda.')
-      return
-    }
-    if (!title.trim() || title.trim().length < 3) {
-      setError('El título debe tener al menos 3 caracteres.')
-      return
-    }
-    if (!mode) {
-      setError('Elegí un modo de juego.')
-      return
-    }
-    if (maxPlayers < 2 || maxPlayers > 10) {
-      setError('La cantidad de jugadores debe estar entre 2 y 10.')
-      return
-    }
+    if (!gameSlug) { setError('Elegí un juego.'); return }
+    if (!myProfileForGame) { setError('Necesitás tener un perfil de ese juego.'); return }
+    if (!title.trim() || title.trim().length < 3) { setError('El título debe tener al menos 3 caracteres.'); return }
+    if (!mode) { setError('Elegí un modo de juego.'); return }
+    if (playersNeeded < 1 || playersNeeded > 9) { setError('Podés buscar entre 1 y 9 jugadores más.'); return }
 
     setSubmitting(true)
     try {
@@ -99,13 +85,14 @@ function CreateSearchPage() {
         title: title.trim(),
         description: description.trim() || null,
         mode,
-        server: myProfileForGame.server,  // El backend exige que coincida con tu perfil
+        server: myProfileForGame.server,
         roles_needed: rolesNeeded,
-        max_players: maxPlayers,
+        // El backend sigue usando max_players (total incluyendo al creador)
+        // Nosotros le sumamos 1 acá antes de mandar
+        max_players: playersNeeded + 1,
         min_rank: minRank.trim() || null,
         join_mode: joinMode,
       })
-      // Redirigir al detalle (esa página la armamos en sesión 3)
       navigate(`/searches/${response.data.id}`)
     } catch (err) {
       console.error(err)
@@ -116,7 +103,6 @@ function CreateSearchPage() {
     }
   }
 
-  // Loading inicial
   if (gamesLoading || profilesLoading) {
     return (
       <div className="min-h-screen bg-dark-900 text-white">
@@ -128,7 +114,6 @@ function CreateSearchPage() {
     )
   }
 
-  // Estado especial: el usuario no tiene NINGÚN perfil de juego
   if (myProfiles.length === 0) {
     return (
       <div className="min-h-screen bg-dark-900 text-white">
@@ -141,12 +126,9 @@ function CreateSearchPage() {
           </div>
           <div className="bg-dark-800 border border-dark-700 rounded-lg p-8 text-center">
             <p className="text-2xl mb-2">🎮</p>
-            <p className="text-lg font-semibold mb-2">
-              Primero creá un perfil de juego
-            </p>
+            <p className="text-lg font-semibold mb-2">Primero creá un perfil de juego</p>
             <p className="text-gray-400 mb-6">
-              Para crear una búsqueda necesitás haber configurado tu perfil
-              en ese juego: server, roles, rango.
+              Para crear una búsqueda necesitás haber configurado tu perfil en ese juego.
             </p>
             <Link
               to="/profile/game-profiles/new"
@@ -160,7 +142,6 @@ function CreateSearchPage() {
     )
   }
 
-  // Los juegos donde el usuario puede crear búsquedas son aquellos donde tiene perfil
   const gamesWithProfile = games.filter((g) =>
     myProfiles.some((p) => p.game.slug === g.slug)
   )
@@ -205,7 +186,7 @@ function CreateSearchPage() {
             </p>
           </div>
 
-          {/* Aviso del server (read-only, viene del perfil) */}
+          {/* Server (read-only, viene del perfil) */}
           {myProfileForGame && (
             <div className="bg-primary-700/10 border border-primary-700/50 rounded-lg p-3 text-sm">
               <p className="text-gray-300">
@@ -217,7 +198,6 @@ function CreateSearchPage() {
             </div>
           )}
 
-          {/* Resto del form: solo si hay juego elegido */}
           {selectedGame && (
             <>
               {/* Título */}
@@ -238,26 +218,10 @@ function CreateSearchPage() {
                 />
               </div>
 
-              {/* Descripción */}
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-2">
-                  Descripción <span className="text-gray-500">(opcional)</span>
-                </label>
-                <textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  maxLength={1000}
-                  rows={3}
-                  placeholder="Solo gente que comunique, diamante o más..."
-                  className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition-colors resize-none"
-                />
-              </div>
-
-              {/* Modo */}
+              {/* Modo de juego — AHORA ANTES DE DESCRIPCIÓN */}
               <div>
                 <label htmlFor="mode" className="block text-sm font-medium text-gray-300 mb-2">
-                  Modo de juego
+                  Modo de {selectedGame.name}
                 </label>
                 <select
                   id="mode"
@@ -273,7 +237,23 @@ function CreateSearchPage() {
                 </select>
               </div>
 
-              {/* Roles necesarios */}
+              {/* Descripción — AHORA DESPUÉS DEL MODO */}
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-2">
+                  Descripción <span className="text-gray-500">(opcional)</span>
+                </label>
+                <textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  maxLength={1000}
+                  rows={3}
+                  placeholder="Solo gente que comunique, diamante o más..."
+                  className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition-colors resize-none"
+                />
+              </div>
+
+              {/* Roles */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Roles que buscás <span className="text-gray-500">(opcional)</span>
@@ -303,24 +283,24 @@ function CreateSearchPage() {
                 </div>
               </div>
 
-              {/* Max players + rango */}
+              {/* Jugadores + Rango */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="maxPlayers" className="block text-sm font-medium text-gray-300 mb-2">
-                    Cantidad de jugadores
+                  <label htmlFor="playersNeeded" className="block text-sm font-medium text-gray-300 mb-2">
+                    ¿Cuántos jugadores más buscás?
                   </label>
                   <input
-                    id="maxPlayers"
+                    id="playersNeeded"
                     type="number"
-                    value={maxPlayers}
-                    onChange={(e) => setMaxPlayers(parseInt(e.target.value, 10) || 0)}
-                    min={2}
-                    max={10}
+                    value={playersNeeded}
+                    onChange={(e) => setPlayersNeeded(parseInt(e.target.value, 10) || 0)}
+                    min={1}
+                    max={9}
                     required
                     className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary-500 transition-colors"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Incluyéndote a vos. Entre 2 y 10.
+                    Sin contarte a vos. Total del equipo: {playersNeeded + 1} jugadores.
                   </p>
                 </div>
 
@@ -340,74 +320,59 @@ function CreateSearchPage() {
                 </div>
               </div>
 
-              {/* Modo de unión: manual vs auto */}
+              {/* Modo de unión */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   ¿Cómo se unen los demás?
                 </label>
                 <div className="space-y-2">
-                  <label
-                    className={`block p-3 border rounded-lg cursor-pointer transition-colors ${
-                      joinMode === 'manual'
-                        ? 'bg-primary-600/20 border-primary-500'
-                        : 'bg-dark-900 border-dark-700 hover:border-dark-700'
-                    }`}
-                  >
-                    <div className="flex items-start gap-2">
-                      <input
-                        type="radio"
-                        name="joinMode"
-                        value="manual"
-                        checked={joinMode === 'manual'}
-                        onChange={(e) => setJoinMode(e.target.value)}
-                        className="accent-primary-500 mt-1"
-                      />
-                      <div>
-                        <span className="font-semibold">👤 Manual</span>
-                        <p className="text-xs text-gray-400 mt-1">
-                          Vos aprobás o rechazás a cada postulante. Más control, más lento.
-                        </p>
+                  {[
+                    {
+                      value: 'manual',
+                      label: '👤 Manual',
+                      desc: 'Vos aprobás o rechazás a cada postulante. Más control, más lento.',
+                    },
+                    {
+                      value: 'auto',
+                      label: '⚡ Automático',
+                      desc: 'Los postulantes entran solos si hay cupo. Más rápido, menos filtro.',
+                    },
+                  ].map((opt) => (
+                    <label
+                      key={opt.value}
+                      className={`block p-3 border rounded-lg cursor-pointer transition-colors ${
+                        joinMode === opt.value
+                          ? 'bg-primary-600/20 border-primary-500'
+                          : 'bg-dark-900 border-dark-700 hover:border-dark-700'
+                      }`}
+                    >
+                      <div className="flex items-start gap-2">
+                        <input
+                          type="radio"
+                          name="joinMode"
+                          value={opt.value}
+                          checked={joinMode === opt.value}
+                          onChange={(e) => setJoinMode(e.target.value)}
+                          className="accent-primary-500 mt-1"
+                        />
+                        <div>
+                          <span className="font-semibold">{opt.label}</span>
+                          <p className="text-xs text-gray-400 mt-1">{opt.desc}</p>
+                        </div>
                       </div>
-                    </div>
-                  </label>
-
-                  <label
-                    className={`block p-3 border rounded-lg cursor-pointer transition-colors ${
-                      joinMode === 'auto'
-                        ? 'bg-primary-600/20 border-primary-500'
-                        : 'bg-dark-900 border-dark-700 hover:border-dark-700'
-                    }`}
-                  >
-                    <div className="flex items-start gap-2">
-                      <input
-                        type="radio"
-                        name="joinMode"
-                        value="auto"
-                        checked={joinMode === 'auto'}
-                        onChange={(e) => setJoinMode(e.target.value)}
-                        className="accent-primary-500 mt-1"
-                      />
-                      <div>
-                        <span className="font-semibold">⚡ Automático</span>
-                        <p className="text-xs text-gray-400 mt-1">
-                          Los postulantes entran solos si hay cupo. Más rápido, menos filtro.
-                        </p>
-                      </div>
-                    </div>
-                  </label>
+                    </label>
+                  ))}
                 </div>
               </div>
             </>
           )}
 
-          {/* Error */}
           {error && (
             <div className="bg-red-900/50 border border-red-500 text-red-100 p-3 rounded-lg text-sm">
               {error}
             </div>
           )}
 
-          {/* Submit */}
           <div className="flex gap-3">
             <button
               type="submit"

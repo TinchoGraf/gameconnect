@@ -413,3 +413,28 @@ class TestMySearches:
     def test_requires_auth(self, client, loaded_games):
         response = client.get("/searches/me/listing")
         assert response.status_code == 401
+
+
+class TestPlayersNeededLogic:
+    """
+    Verifica que el frontend puede mandar 'jugadores que faltan'
+    y el backend los guarda como max_players = playersNeeded + 1.
+    """
+
+    def test_max_players_stored_correctly(self, client, user_with_lol_profile):
+        """
+        Si el usuario busca 3 jugadores más, max_players en BD debe ser 4.
+        """
+        payload = {**_base_search_payload(), "max_players": 4}
+        response = client.post("/searches", json=payload, headers=user_with_lol_profile)
+        assert response.status_code == 201
+        data = response.json()
+        assert data["max_players"] == 4
+
+    def test_min_players_is_two(self, client, user_with_lol_profile):
+        """
+        max_players mínimo es 2 (buscar al menos 1 jugador más que vos).
+        """
+        payload = {**_base_search_payload(), "max_players": 1}
+        response = client.post("/searches", json=payload, headers=user_with_lol_profile)
+        assert response.status_code == 422

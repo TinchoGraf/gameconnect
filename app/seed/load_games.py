@@ -6,6 +6,9 @@ Se ejecuta con:
 
 Es idempotente: si los juegos ya existen, los actualiza en vez de duplicarlos.
 
+Los game_modes están ordenados de más competitivo a más casual — ese orden
+se preserva en el JSON y el frontend lo usa tal cual para el dropdown.
+
 IMPORTANTE: Este script asume que las tablas YA EXISTEN. La creación de tablas
 es responsabilidad de Alembic. Antes de correr el seed por primera vez:
     alembic upgrade head
@@ -24,7 +27,15 @@ GAMES_DATA = [
         "description": "MOBA 5v5 de Riot Games",
         "roles": ["Top", "Jungla", "Mid", "ADC", "Support"],
         "servers": ["LAS", "LAN", "NA", "BR", "EUW", "EUNE", "KR", "JP", "OCE", "TR", "RU"],
-        "game_modes": ["chill", "tryhard", "ranked-solo", "ranked-flex", "normal", "aram"],
+        # Ordenados: ranked primero, chill al final
+        "game_modes": [
+            "Ranked Solo/Duo",
+            "Ranked Flex",
+            "Tryhard (Normal)",
+            "Normal",
+            "ARAM",
+            "Chill",
+        ],
     },
     {
         "name": "Counter Strike 2",
@@ -32,7 +43,13 @@ GAMES_DATA = [
         "description": "FPS táctico 5v5 de Valve",
         "roles": ["Entry Fragger", "AWPer", "IGL", "Support", "Lurker", "Rifler"],
         "servers": ["SA", "NA-East", "NA-West", "EU-West", "EU-East", "Asia", "Oceania"],
-        "game_modes": ["chill", "tryhard", "competitive", "premier", "wingman", "casual"],
+        "game_modes": [
+            "Premier",
+            "Competitivo",
+            "Wingman",
+            "Chill",
+            "Casual",
+        ],
     },
     {
         "name": "Dead by Daylight",
@@ -40,7 +57,13 @@ GAMES_DATA = [
         "description": "Asimétrico 4v1 de Behaviour Interactive",
         "roles": ["Killer", "Survivor"],
         "servers": ["Americas", "Europe", "Asia"],
-        "game_modes": ["chill", "tryhard", "ranked", "custom", "tome-grind"],
+        "game_modes": [
+            "Ranked",
+            "Tryhard",
+            "Tome Grind",
+            "Custom",
+            "Chill",
+        ],
     },
     {
         "name": "Rocket League",
@@ -48,7 +71,14 @@ GAMES_DATA = [
         "description": "Fútbol con autos de Psyonix",
         "roles": ["Striker", "Midfielder", "Goalkeeper", "Flex"],
         "servers": ["SAM", "USE", "USW", "EU", "ASIA", "OCE", "ME"],
-        "game_modes": ["chill", "tryhard", "ranked-2v2", "ranked-3v3", "ranked-1v1", "casual", "tournament"],
+        "game_modes": [
+            "Ranked 3v3",
+            "Ranked 2v2",
+            "Ranked 1v1",
+            "Tournament",
+            "Casual",
+            "Chill",
+        ],
     },
 ]
 
