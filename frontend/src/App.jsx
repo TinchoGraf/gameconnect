@@ -17,6 +17,7 @@ import PendingReviewsPage from './pages/PendingReviewsPage'
 import WriteReviewPage from './pages/WriteReviewPage'
 import PublicUserPage from './pages/PublicUserPage'
 import NotFoundPage from './pages/NotFoundPage'
+import FriendsPage from './pages/FriendsPage'
 
 function App() {
   return (
@@ -86,6 +87,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <PendingReviewsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/friends"
+            element={
+              <ProtectedRoute>
+                <FriendsPage />
               </ProtectedRoute>
             }
           />

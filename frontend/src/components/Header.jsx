@@ -47,6 +47,12 @@ function Header() {
                 Reviews
               </Link>
               <Link
+                to="/friends"
+                className="text-gray-300 hover:text-white transition-colors"
+              >
+                Amigos
+              </Link>
+              <Link
                 to="/profile"
                 className="text-gray-300 hover:text-white transition-colors"
               >

@@ -3,14 +3,10 @@ Endpoints relacionados a usuarios.
 
 - GET /users/me → datos del usuario logueado (requiere token)
 - GET /users/{username} → perfil público de cualquier usuario
-
-En las próximas fases vamos a agregar:
-- Actualizar perfil propio
-- Listar / buscar usuarios
-- Agregar/quitar perfiles de juego
+- GET /users/search?q=... → búsqueda parcial de usuarios por username
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_current_user
@@ -27,14 +23,36 @@ router = APIRouter(prefix="/users", tags=["users"])
     summary="Obtener el perfil del usuario logueado",
 )
 def read_my_profile(current_user: User = Depends(get_current_user)):
-    """
-    Devuelve el perfil completo del usuario autenticado.
-
-    Incluye datos privados (email) que no se exponen en endpoints públicos.
-    Para acceder, hay que enviar el header:
-        Authorization: Bearer <token>
-    """
     return current_user
+
+
+@router.get(
+    "/search",
+    response_model=list[UserOut],
+    summary="Buscar usuarios por username (parcial)",
+)
+def search_users(
+    q: str = Query(..., min_length=2, description="Texto a buscar en usernames"),
+    limit: int = Query(10, ge=1, le=20),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Búsqueda parcial de usuarios por username.
+    Requiere autenticación (no queremos que bots enumeren usuarios).
+    El usuario actual no aparece en los resultados.
+    Mínimo 2 caracteres para evitar resultados masivos.
+    """
+    users = (
+        db.query(User)
+        .filter(
+            User.username.ilike(f"%{q}%"),
+            User.id != current_user.id,
+        )
+        .limit(limit)
+        .all()
+    )
+    return users
 
 
 @router.get(
@@ -43,12 +61,6 @@ def read_my_profile(current_user: User = Depends(get_current_user)):
     summary="Ver el perfil público de un usuario",
 )
 def read_user_by_username(username: str, db: Session = Depends(get_db)):
-    """
-    Devuelve el perfil público de un usuario por su username.
-
-    No requiere autenticación (los perfiles son públicos).
-    Solo expone información pública (sin email).
-    """
     user = db.query(User).filter(User.username == username).first()
     if not user:
         raise HTTPException(
