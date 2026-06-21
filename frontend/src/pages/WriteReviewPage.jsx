@@ -291,17 +291,17 @@ function WriteReviewPage() {
           )}
 
           {/* Submit */}
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               type="submit"
               disabled={submitting}
-              className="bg-primary-600 hover:bg-primary-700 disabled:bg-dark-700 disabled:cursor-not-allowed text-white font-semibold px-6 py-2 rounded-lg transition-colors"
+              className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 disabled:bg-dark-700 disabled:cursor-not-allowed text-white font-semibold px-6 py-2 rounded-lg transition-colors"
             >
               {submitting ? 'Enviando...' : 'Publicar review'}
             </button>
             <Link
               to="/pending-reviews"
-              className="bg-dark-700 hover:bg-dark-900 text-white px-6 py-2 rounded-lg transition-colors"
+              className="w-full sm:w-auto text-center bg-dark-700 hover:bg-dark-900 text-white px-6 py-2 rounded-lg transition-colors"
             >
               Cancelar
             </Link>

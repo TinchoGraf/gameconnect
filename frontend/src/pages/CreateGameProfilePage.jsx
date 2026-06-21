@@ -207,7 +207,7 @@ function CreateGameProfilePage() {
                 <p className="text-xs text-gray-500 mb-2">
                   Marcá todos los que cubrís. Al menos uno.
                 </p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {selectedGame.roles.map((role) => (
                     <label
                       key={role}
@@ -364,17 +364,17 @@ function CreateGameProfilePage() {
           )}
 
           {/* Submit */}
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               type="submit"
               disabled={submitting || !gameSlug}
-              className="bg-primary-600 hover:bg-primary-700 disabled:bg-dark-700 disabled:cursor-not-allowed text-white font-semibold px-6 py-2 rounded-lg transition-colors"
+              className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 disabled:bg-dark-700 disabled:cursor-not-allowed text-white font-semibold px-6 py-2 rounded-lg transition-colors"
             >
               {submitting ? 'Creando...' : 'Crear perfil'}
             </button>
             <Link
               to="/profile/game-profiles"
-              className="bg-dark-700 hover:bg-dark-900 text-white px-6 py-2 rounded-lg transition-colors"
+              className="w-full sm:w-auto text-center bg-dark-700 hover:bg-dark-900 text-white px-6 py-2 rounded-lg transition-colors"
             >
               Cancelar
             </Link>
