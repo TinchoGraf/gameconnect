@@ -35,6 +35,18 @@ class Settings(BaseSettings):
     # Formato: "url1,url2,url3" (separadas por coma, sin espacios)
     CORS_ORIGINS: str = "http://localhost:5173"
 
+    # Email (reporte de bugs): se manda por Gmail SMTP.
+    # SMTP_USER es la cuenta de Gmail que envía, SMTP_PASSWORD es una
+    # "Contraseña de aplicación" (no la contraseña normal de la cuenta) —
+    # se genera en https://myaccount.google.com/apppasswords (requiere 2FA).
+    # Si SMTP_PASSWORD queda vacío (default en desarrollo), no se intenta
+    # mandar el mail: el reporte se guarda igual y se loguea en consola.
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    BUG_REPORT_TO_EMAIL: str = "tinchografdev@gmail.com"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

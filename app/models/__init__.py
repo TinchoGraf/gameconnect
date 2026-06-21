@@ -13,5 +13,6 @@ from app.models.participation import Participation
 from app.models.review import Review
 from app.models.friendship import Friendship
 from app.models.block import Block
+from app.models.bug_report import BugReport
 
-__all__ = ["User", "Game", "GameProfile", "Search", "Participation", "Review", "Friendship", "Block"]
+__all__ = ["User", "Game", "GameProfile", "Search", "Participation", "Review", "Friendship", "Block", "BugReport"]

@@ -47,6 +47,7 @@ function Header() {
         <div className="hidden md:flex items-center gap-6">
           <Link to="/searches" className={linkClass}>Búsquedas</Link>
           <Link to="/games" className={linkClass}>Juegos</Link>
+          <Link to="/report-bug" className={linkClass}>🐛 Reportar bug</Link>
 
           {isAuthenticated ? (
             <>
@@ -100,6 +101,7 @@ function Header() {
         <div className="md:hidden border-t border-dark-700 px-4 py-4 flex flex-col gap-4">
           <Link to="/searches" className={linkClass}>Búsquedas</Link>
           <Link to="/games" className={linkClass}>Juegos</Link>
+          <Link to="/report-bug" className={linkClass}>🐛 Reportar bug</Link>
 
           {isAuthenticated ? (
             <>

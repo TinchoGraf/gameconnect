@@ -18,6 +18,7 @@ import WriteReviewPage from './pages/WriteReviewPage'
 import PublicUserPage from './pages/PublicUserPage'
 import NotFoundPage from './pages/NotFoundPage'
 import FriendsPage from './pages/FriendsPage'
+import ReportBugPage from './pages/ReportBugPage'
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="/searches" element={<SearchesPage />} />
           <Route path="/searches/:id" element={<SearchDetailPage />} />
           <Route path="/users/:username" element={<PublicUserPage />} />
+          <Route path="/report-bug" element={<ReportBugPage />} />
 
           {/* Rutas protegidas */}
           <Route

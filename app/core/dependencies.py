@@ -26,6 +26,11 @@ from app.models.user import User
 # Esto es lo que hace que /docs muestre el botón "Authorize" automáticamente.
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
+# Variante con auto_error=False: no tira 401 si no hay header Authorization.
+# La usa get_current_user_optional para endpoints públicos que igual quieren
+# saber quién es el usuario SI está logueado (ej: reportar un bug).
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
+
 
 def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -69,3 +74,30 @@ def get_current_user(
         raise credentials_exception
 
     return user
+
+
+def get_current_user_optional(
+    token: str | None = Depends(oauth2_scheme_optional),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """
+    Igual que get_current_user, pero para endpoints públicos: si no hay
+    token, o es inválido/expirado, devuelve None en vez de tirar 401.
+    """
+    if not token:
+        return None
+
+    payload = decode_access_token(token)
+    if payload is None:
+        return None
+
+    user_id_str = payload.get("sub")
+    if not user_id_str:
+        return None
+
+    try:
+        user_id = int(user_id_str)
+    except ValueError:
+        return None
+
+    return db.query(User).filter(User.id == user_id).first()
