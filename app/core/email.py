@@ -1,26 +1,35 @@
 """
-Envío de mails por Gmail SMTP.
+Envío de mails con la API de Resend (HTTPS).
 
-No usamos ningún paquete externo: smtplib y email vienen en la librería
-estándar de Python. Si SMTP_PASSWORD no está configurado (típico en
-desarrollo local), no intentamos conectar — solo logueamos el contenido
-que se hubiera mandado, para no exigir credenciales reales para probar
-el flujo.
+Probamos primero con Gmail SMTP, pero Render bloquea las conexiones
+salientes por los puertos típicos de SMTP (confirmado en producción:
+OSError "Network is unreachable" al conectar a smtp.gmail.com:587).
+Resend manda por HTTPS, que nunca está bloqueado.
+
+Usamos httpx (ya es dependencia del proyecto, vía requirements.txt) en
+vez de instalar el SDK oficial de Resend, para no sumar un paquete nuevo
+para un solo request HTTP.
+
+Si RESEND_API_KEY no está configurado (típico en desarrollo local), no
+intentamos la llamada — solo logueamos el contenido que se hubiera
+mandado, para no exigir credenciales reales para probar el flujo.
 """
 
 import logging
-import smtplib
-from email.mime.text import MIMEText
+
+import httpx
 
 from app.config import settings
 from app.models.bug_report import BugReport
 
 logger = logging.getLogger("gameconnect.email")
 
+RESEND_API_URL = "https://api.resend.com/emails"
 
-def _build_bug_report_email(report: BugReport) -> MIMEText:
+
+def _build_bug_report_email_body(report: BugReport) -> str:
     reporter = report.reporter_username or "Anónimo"
-    body = (
+    return (
         f"Nuevo reporte de bug en GameConnect\n\n"
         f"Reportado por: {reporter}\n"
         f"Fecha: {report.created_at}\n\n"
@@ -29,32 +38,35 @@ def _build_bug_report_email(report: BugReport) -> MIMEText:
         f"Qué pasó después: {report.what_after}\n\n"
         f"Descripción: {report.description}\n"
     )
-    msg = MIMEText(body, "plain", "utf-8")
-    msg["Subject"] = f"🐛 Reporte de bug — {report.location}"
-    msg["From"] = settings.SMTP_USER or settings.BUG_REPORT_TO_EMAIL
-    msg["To"] = settings.BUG_REPORT_TO_EMAIL
-    return msg
 
 
 def send_bug_report_email(report: BugReport) -> None:
     """
     Manda el mail de aviso. Pensada para correr en un BackgroundTask:
-    nunca lanza una excepción hacia arriba (un fallo de SMTP no debe
+    nunca lanza una excepción hacia arriba (un fallo de Resend no debe
     afectar la respuesta HTTP, el reporte ya quedó guardado en la BD).
     """
-    msg = _build_bug_report_email(report)
+    body = _build_bug_report_email_body(report)
 
-    if not settings.SMTP_PASSWORD:
+    if not settings.RESEND_API_KEY:
         logger.warning(
-            "SMTP_PASSWORD no configurado: se simula el envío del reporte #%s.\n%s",
-            report.id, msg.get_payload(),
+            "RESEND_API_KEY no configurado: se simula el envío del reporte #%s.\n%s",
+            report.id, body,
         )
         return
 
     try:
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
-            server.starttls()
-            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-            server.send_message(msg)
+        response = httpx.post(
+            RESEND_API_URL,
+            headers={"Authorization": f"Bearer {settings.RESEND_API_KEY}"},
+            json={
+                "from": settings.BUG_REPORT_FROM_EMAIL,
+                "to": [settings.BUG_REPORT_TO_EMAIL],
+                "subject": f"🐛 Reporte de bug — {report.location}",
+                "text": body,
+            },
+            timeout=10,
+        )
+        response.raise_for_status()
     except Exception:
         logger.exception("No pudimos mandar el mail del reporte de bug #%s", report.id)

@@ -35,16 +35,18 @@ class Settings(BaseSettings):
     # Formato: "url1,url2,url3" (separadas por coma, sin espacios)
     CORS_ORIGINS: str = "http://localhost:5173"
 
-    # Email (reporte de bugs): se manda por Gmail SMTP.
-    # SMTP_USER es la cuenta de Gmail que envía, SMTP_PASSWORD es una
-    # "Contraseña de aplicación" (no la contraseña normal de la cuenta) —
-    # se genera en https://myaccount.google.com/apppasswords (requiere 2FA).
-    # Si SMTP_PASSWORD queda vacío (default en desarrollo), no se intenta
-    # mandar el mail: el reporte se guarda igual y se loguea en consola.
-    SMTP_HOST: str = "smtp.gmail.com"
-    SMTP_PORT: int = 587
-    SMTP_USER: str = ""
-    SMTP_PASSWORD: str = ""
+    # Email (reporte de bugs): se manda con la API de Resend (HTTPS).
+    # Probamos primero con Gmail SMTP, pero Render bloquea las conexiones
+    # salientes por los puertos típicos de SMTP (25/465/587) para evitar
+    # spam — por eso usamos un servicio que manda por HTTPS en vez de SMTP.
+    # RESEND_API_KEY se genera en resend.com (API Keys).
+    # Si queda vacío (default en desarrollo), no se intenta mandar el mail:
+    # el reporte se guarda igual y se loguea en consola.
+    RESEND_API_KEY: str = ""
+    # En el plan gratis de Resend, sin verificar un dominio propio, solo se
+    # puede mandar desde este sender de prueba y solo a la dirección con la
+    # que te registraste en Resend.
+    BUG_REPORT_FROM_EMAIL: str = "onboarding@resend.dev"
     BUG_REPORT_TO_EMAIL: str = "tinchografdev@gmail.com"
 
     model_config = SettingsConfigDict(

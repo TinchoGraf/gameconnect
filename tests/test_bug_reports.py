@@ -5,7 +5,7 @@ Cubrimos:
 - Reporte logueado: queda guardado el reporter_username
 - Reporte anónimo (sin token): se guarda igual, con reporter_username null
 - Validación de campos requeridos
-- El endpoint no falla aunque no haya credenciales SMTP configuradas
+- El endpoint no falla aunque no haya RESEND_API_KEY configurada
   (rama "simulado" de desarrollo en app/core/email.py)
 """
 
@@ -60,11 +60,11 @@ class TestCreateBugReport:
         response = client.post("/bug-reports", json=payload)
         assert response.status_code == 422
 
-    def test_does_not_require_smtp_configured(self, client, loaded_games):
+    def test_does_not_require_resend_configured(self, client, loaded_games):
         """
-        En los tests no hay SMTP_PASSWORD seteado (igual que en desarrollo
+        En los tests no hay RESEND_API_KEY seteada (igual que en desarrollo
         local sin configurar nada): el endpoint debe responder 201 igual,
-        la rama de email simplemente loguea en vez de conectar por SMTP.
+        la rama de email simplemente loguea en vez de llamar a la API.
         """
         response = client.post("/bug-reports", json=_base_payload())
         assert response.status_code == 201
