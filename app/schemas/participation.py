@@ -17,6 +17,7 @@ class ParticipationStatusEnum(str, Enum):
     ACCEPTED = "accepted"
     REJECTED = "rejected"
     LEFT = "left"
+    INVITED = "invited"
 
 
 # --------------------------------------------------------------------------

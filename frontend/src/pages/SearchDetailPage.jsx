@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Link, useParams, useNavigate } from 'react-router-dom'
+import { Link, useParams, useNavigate, useLocation } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useAuth } from '../lib/AuthContext'
 import { useSearchDetail } from '../lib/useSearchDetail'
@@ -10,6 +10,7 @@ import ParticipantCard from '../components/ParticipantCard'
 function SearchDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { isAuthenticated, currentUser } = useAuth()
 
   const { search, participations, loading, error, refresh } = useSearchDetail(id)
@@ -18,6 +19,7 @@ function SearchDetailPage() {
   const [joinRole, setJoinRole] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
   const [actionError, setActionError] = useState(null)
+  const inviteWarnings = location.state?.inviteWarnings || []
 
   const myParticipation = useMemo(() => {
     if (!currentUser) return null
@@ -32,6 +34,7 @@ function SearchDetailPage() {
   const isCreator = currentUser && search && currentUser.id === search.creator.id
   const acceptedParticipations = participations.filter((p) => p.status === 'accepted')
   const pendingParticipations = participations.filter((p) => p.status === 'pending')
+  const invitedParticipations = participations.filter((p) => p.status === 'invited')
   const isSearchOpen = search?.status === 'open'
   const isSearchFull = search?.status === 'full'
   const isInProgress = search?.status === 'in_progress'
@@ -114,6 +117,55 @@ function SearchDetailPage() {
       console.error(err)
       const detail = err.response?.data?.detail
       setActionError(typeof detail === 'string' ? detail : 'No pudimos rechazar al postulante.')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function handleAcceptInvite() {
+    if (!joinRole) {
+      setActionError('Elegí un rol antes de aceptar.')
+      return
+    }
+    setActionLoading(true)
+    setActionError(null)
+    try {
+      await api.post(`/searches/${id}/invitations/accept`, { role: joinRole })
+      await refresh()
+    } catch (err) {
+      console.error(err)
+      const detail = err.response?.data?.detail
+      setActionError(typeof detail === 'string' ? detail : 'No pudimos aceptar la invitación.')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function handleRejectInvite() {
+    setActionLoading(true)
+    setActionError(null)
+    try {
+      await api.post(`/searches/${id}/invitations/reject`)
+      await refresh()
+    } catch (err) {
+      console.error(err)
+      const detail = err.response?.data?.detail
+      setActionError(typeof detail === 'string' ? detail : 'No pudimos rechazar la invitación.')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function handleCancelInvite(username) {
+    setActionLoading(true)
+    setActionError(null)
+    try {
+      await api.delete(`/searches/${id}/invitations/${username}`)
+      await refresh()
+    } catch (err) {
+      console.error(err)
+      const detail = err.response?.data?.detail
+      setActionError(typeof detail === 'string' ? detail : 'No pudimos cancelar la invitación.')
     } finally {
       setActionLoading(false)
     }
@@ -242,6 +294,17 @@ function SearchDetailPage() {
             ← Volver a búsquedas
           </Link>
         </div>
+
+        {inviteWarnings.length > 0 && (
+          <div className="bg-amber-900/30 border border-amber-700 text-amber-100 p-4 rounded-lg text-sm mb-6">
+            <p className="font-semibold mb-1">Búsqueda creada, pero algunas invitaciones no se pudieron enviar:</p>
+            <ul className="list-disc list-inside space-y-0.5">
+              {inviteWarnings.map((w) => (
+                <li key={w.username}>{w.username}: {w.detail}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Header */}
         <div className="bg-dark-800 border border-dark-700 rounded-lg p-6 mb-6">
@@ -398,6 +461,63 @@ function SearchDetailPage() {
           </div>
         )}
 
+        {/* Invitación recibida, todavía sin responder */}
+        {myParticipation?.status === 'invited' && !isCreator && (
+          <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-4 mb-6">
+            <h2 className="text-lg font-semibold mb-2">📨 Invitación a esta búsqueda</h2>
+            <p className="text-sm text-gray-300 mb-3">
+              <strong>{search.creator.username}</strong> te invitó a unirte.
+            </p>
+
+            {!myProfileForGame ? (
+              <p className="text-sm text-gray-300 mb-3">
+                Para aceptar necesitás un perfil de <strong>{search.game.name}</strong>.{' '}
+                <Link to="/profile/game-profiles/new" className="text-primary-500 hover:underline">
+                  Crear perfil
+                </Link>
+              </p>
+            ) : myProfileForGame.server !== search.server ? (
+              <p className="text-sm text-gray-300 mb-3">
+                Tu perfil de {search.game.name} juega en <strong>{myProfileForGame.server}</strong>,
+                pero esta búsqueda es en <strong>{search.server}</strong>. No podés aceptar por
+                diferencia de servidor, pero podés rechazarla.
+              </p>
+            ) : !canStillJoin ? (
+              <p className="text-sm text-gray-300 mb-3">
+                Esta búsqueda ya no tiene cupo disponible. No podés aceptar, pero podés rechazarla.
+              </p>
+            ) : (
+              <div className="flex flex-wrap items-center gap-3 mb-3">
+                <select
+                  value={joinRole}
+                  onChange={(e) => setJoinRole(e.target.value)}
+                  className="bg-dark-900 border border-dark-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary-500"
+                >
+                  <option value="">Elegí un rol...</option>
+                  {myProfileForGame.roles.map((role) => (
+                    <option key={role} value={role}>{role}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleAcceptInvite}
+                  disabled={actionLoading || !joinRole}
+                  className="bg-primary-600 hover:bg-primary-700 disabled:bg-dark-700 disabled:cursor-not-allowed text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm"
+                >
+                  {actionLoading ? 'Enviando...' : 'Aceptar invitación'}
+                </button>
+              </div>
+            )}
+
+            <button
+              onClick={handleRejectInvite}
+              disabled={actionLoading}
+              className="text-sm bg-dark-700 hover:bg-dark-900 disabled:opacity-50 text-white px-4 py-2 rounded transition-colors"
+            >
+              Rechazar invitación
+            </button>
+          </div>
+        )}
+
         {/* Postulación pending */}
         {myParticipation?.status === 'pending' && !isCreator && (
           <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-4 mb-6">
@@ -538,6 +658,26 @@ function SearchDetailPage() {
                   canManage={isCreator && isSearchOpen}
                   onAccept={handleAccept}
                   onReject={handleReject}
+                  actionLoading={actionLoading}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Invitaciones enviadas (solo creador) */}
+        {isCreator && invitedParticipations.length > 0 && (
+          <div className="bg-dark-800 border border-dark-700 rounded-lg p-6 mb-6">
+            <h2 className="text-lg font-semibold mb-3">
+              Invitaciones enviadas ({invitedParticipations.length})
+            </h2>
+            <div className="space-y-2">
+              {invitedParticipations.map((p) => (
+                <ParticipantCard
+                  key={p.id}
+                  participation={p}
+                  canManage={isCreator}
+                  onCancelInvite={handleCancelInvite}
                   actionLoading={actionLoading}
                 />
               ))}

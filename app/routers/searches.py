@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.core.dependencies import get_current_user
 from app.database import get_db
+from app.models.friendship import Friendship
 from app.models.game import Game
 from app.models.game_profile import GameProfile
 from app.models.participation import Participation, ParticipationStatus
@@ -80,6 +81,22 @@ def _require_creator(search: Search, user: User) -> None:
         raise HTTPException(
             403, "Solo el creador de la búsqueda puede hacer esto."
         )
+
+
+def _are_friends(db: Session, user_a_id: int, user_b_id: int) -> bool:
+    """Verifica si dos usuarios son amigos (amistad aceptada, en cualquier dirección)."""
+    return (
+        db.query(Friendship)
+        .filter(
+            (
+                ((Friendship.requester_id == user_a_id) & (Friendship.addressee_id == user_b_id))
+                | ((Friendship.requester_id == user_b_id) & (Friendship.addressee_id == user_a_id))
+            ),
+            Friendship.status == "accepted",
+        )
+        .first()
+        is not None
+    )
 
 
 def _validate_against_game(
@@ -549,6 +566,247 @@ def reject_participation(
 
 
 # --------------------------------------------------------------------------
+# Invitaciones: el creador invita a un amigo, que acepta o rechaza
+#
+# IMPORTANTE: las rutas literales /invitations/accept y /invitations/reject
+# tienen que estar declaradas ANTES que /invitations/{username}, porque
+# FastAPI matchea las rutas en orden de declaración y {username} capturaría
+# "accept"/"reject" como si fueran un nombre de usuario.
+# --------------------------------------------------------------------------
+
+@router.post(
+    "/{search_id}/invitations/accept",
+    response_model=ParticipationOut,
+    summary="Aceptar una invitación a esta búsqueda",
+)
+def accept_invitation(
+    search_id: int,
+    data: JoinRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    search = _get_search_or_404(db, search_id)
+
+    participation = (
+        db.query(Participation)
+        .filter(
+            Participation.search_id == search_id,
+            Participation.user_id == current_user.id,
+            Participation.status == ParticipationStatus.INVITED.value,
+        )
+        .first()
+    )
+    if not participation:
+        raise HTTPException(404, "No tenés una invitación pendiente para esta búsqueda.")
+
+    if search.status != SearchStatus.OPEN.value:
+        raise HTTPException(
+            409, f"La búsqueda ya no está abierta (estado: '{search.status}')."
+        )
+
+    profile = (
+        db.query(GameProfile)
+        .filter(
+            GameProfile.user_id == current_user.id,
+            GameProfile.game_id == search.game_id,
+        )
+        .first()
+    )
+    if not profile:
+        raise HTTPException(
+            422,
+            f"Necesitás un perfil de {search.game.name} para aceptar. "
+            f"Crealo en POST /users/me/game-profiles.",
+        )
+    if profile.server != search.server:
+        raise HTTPException(
+            422,
+            f"Tu perfil juega en '{profile.server}' pero la búsqueda es en "
+            f"'{search.server}'. No podés aceptar por diferencia de servidor.",
+        )
+    if data.role is not None and data.role not in profile.roles:
+        raise HTTPException(
+            422,
+            f"No jugás el rol '{data.role}' en tu perfil. "
+            f"Tus roles: {profile.roles}",
+        )
+
+    accepted_count = _count_accepted(db, search.id)
+    if accepted_count >= search.max_players:
+        raise HTTPException(409, "La búsqueda ya está completa.")
+
+    participation.status = ParticipationStatus.ACCEPTED.value
+    participation.role = data.role or profile.main_role
+
+    if accepted_count + 1 >= search.max_players:
+        search.status = SearchStatus.FULL.value
+
+    db.commit()
+    db.refresh(participation)
+    return participation
+
+
+@router.post(
+    "/{search_id}/invitations/reject",
+    response_model=ParticipationOut,
+    summary="Rechazar una invitación a esta búsqueda",
+)
+def reject_invitation(
+    search_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    _get_search_or_404(db, search_id)
+
+    participation = (
+        db.query(Participation)
+        .filter(
+            Participation.search_id == search_id,
+            Participation.user_id == current_user.id,
+            Participation.status == ParticipationStatus.INVITED.value,
+        )
+        .first()
+    )
+    if not participation:
+        raise HTTPException(404, "No tenés una invitación pendiente para esta búsqueda.")
+
+    participation.status = ParticipationStatus.REJECTED.value
+    db.commit()
+    db.refresh(participation)
+    return participation
+
+
+@router.post(
+    "/{search_id}/invitations/{username}",
+    response_model=ParticipationOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Invitar a un amigo a esta búsqueda (solo creador)",
+)
+def invite_friend(
+    search_id: int,
+    username: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Invita a un amigo a unirse a la búsqueda. Queda en estado 'invited'
+    hasta que el invitado la acepte o la rechace (no se lo agrega directo).
+
+    Reglas:
+    - Solo el creador puede invitar
+    - La búsqueda debe estar 'open'
+    - Tienen que ser amigos
+    - El invitado no puede tener ya una participación activa
+    - El invitado debe tener GameProfile en el juego, con el mismo server
+    """
+    search = _get_search_or_404(db, search_id)
+    _require_creator(search, current_user)
+
+    if search.status != SearchStatus.OPEN.value:
+        raise HTTPException(
+            409, f"Solo se puede invitar a una búsqueda abierta (estado: '{search.status}')."
+        )
+
+    target = db.query(User).filter(User.username == username).first()
+    if not target:
+        raise HTTPException(404, f"No existe el usuario '{username}'.")
+
+    if target.id == current_user.id:
+        raise HTTPException(400, "No podés invitarte a vos mismo.")
+
+    if not _are_friends(db, current_user.id, target.id):
+        raise HTTPException(400, "Solo podés invitar a amigos.")
+
+    existing = (
+        db.query(Participation)
+        .filter(
+            Participation.search_id == search_id,
+            Participation.user_id == target.id,
+        )
+        .first()
+    )
+    if existing and existing.status in (
+        ParticipationStatus.PENDING.value,
+        ParticipationStatus.ACCEPTED.value,
+        ParticipationStatus.INVITED.value,
+    ):
+        raise HTTPException(
+            409,
+            f"{target.username} ya tiene una participación en esta búsqueda "
+            f"con estado '{existing.status}'.",
+        )
+
+    profile = (
+        db.query(GameProfile)
+        .filter(
+            GameProfile.user_id == target.id,
+            GameProfile.game_id == search.game_id,
+        )
+        .first()
+    )
+    if not profile:
+        raise HTTPException(
+            422, f"{target.username} no tiene un perfil de {search.game.name}."
+        )
+    if profile.server != search.server:
+        raise HTTPException(
+            422,
+            f"{target.username} juega en '{profile.server}' pero la búsqueda "
+            f"es en '{search.server}'.",
+        )
+
+    if existing:
+        existing.status = ParticipationStatus.INVITED.value
+        existing.role = None
+        participation = existing
+    else:
+        participation = Participation(
+            search_id=search.id,
+            user_id=target.id,
+            status=ParticipationStatus.INVITED.value,
+        )
+        db.add(participation)
+
+    db.commit()
+    db.refresh(participation)
+    return participation
+
+
+@router.delete(
+    "/{search_id}/invitations/{username}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Cancelar una invitación enviada (solo creador)",
+)
+def cancel_invitation(
+    search_id: int,
+    username: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    search = _get_search_or_404(db, search_id)
+    _require_creator(search, current_user)
+
+    target = db.query(User).filter(User.username == username).first()
+    if not target:
+        raise HTTPException(404, f"No existe el usuario '{username}'.")
+
+    participation = (
+        db.query(Participation)
+        .filter(
+            Participation.search_id == search_id,
+            Participation.user_id == target.id,
+            Participation.status == ParticipationStatus.INVITED.value,
+        )
+        .first()
+    )
+    if not participation:
+        raise HTTPException(404, "No hay una invitación pendiente para este usuario.")
+
+    db.delete(participation)
+    db.commit()
+
+
+# --------------------------------------------------------------------------
 # Ver participaciones de una búsqueda
 # --------------------------------------------------------------------------
 
@@ -735,6 +993,7 @@ def list_my_searches(
     - "participating": búsquedas donde participo (status accepted o pending)
                        y no soy el creador (excluimos las creadas porque
                        ya aparecen en "created")
+    - "invited": búsquedas donde tengo una invitación pendiente de responder
     """
     # Búsquedas creadas por mí
     created_searches = (
@@ -763,7 +1022,21 @@ def list_my_searches(
         .all()
     )
 
+    # Búsquedas donde me invitaron y todavía no respondí
+    invited_searches = (
+        db.query(Search)
+        .options(joinedload(Search.creator), joinedload(Search.game))
+        .join(Participation, Participation.search_id == Search.id)
+        .filter(
+            Participation.user_id == current_user.id,
+            Participation.status == ParticipationStatus.INVITED.value,
+        )
+        .order_by(Search.created_at.desc())
+        .all()
+    )
+
     return MySearchesResponse(
         created=[_to_search_out(db, s) for s in created_searches],
         participating=[_to_search_out(db, s) for s in participating_searches],
+        invited=[_to_search_out(db, s) for s in invited_searches],
     )

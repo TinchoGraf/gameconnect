@@ -5,8 +5,9 @@
  *   - participation: objeto Participation del backend
  *   - canManage: bool, true si el usuario actual puede aceptar/rechazar
  *                (solo el creador de la búsqueda lo tiene en true para postulantes pendientes)
- *   - onAccept(userId): callback opcional para aceptar
- *   - onReject(userId): callback opcional para rechazar
+ *   - onAccept(userId): callback opcional para aceptar (postulantes pendientes)
+ *   - onReject(userId): callback opcional para rechazar (postulantes pendientes)
+ *   - onCancelInvite(username): callback opcional para cancelar una invitación enviada
  *   - actionLoading: bool, deshabilita botones mientras se ejecuta una acción
  */
 function ParticipantCard({
@@ -14,6 +15,7 @@ function ParticipantCard({
   canManage = false,
   onAccept,
   onReject,
+  onCancelInvite,
   actionLoading = false,
 }) {
   // Estilos por estado
@@ -22,12 +24,14 @@ function ParticipantCard({
     pending: 'bg-amber-900/40 text-amber-300 border-amber-700',
     rejected: 'bg-red-900/40 text-red-300 border-red-700',
     left: 'bg-dark-700 text-gray-400 border-dark-700',
+    invited: 'bg-blue-900/40 text-blue-300 border-blue-700',
   }
   const statusLabels = {
     accepted: 'Aceptado',
     pending: 'Pendiente',
     rejected: 'Rechazado',
     left: 'Se fue',
+    invited: 'Invitado',
   }
 
   return (
@@ -67,6 +71,17 @@ function ParticipantCard({
               Rechazar
             </button>
           </>
+        )}
+
+        {/* Acción de creador sobre una invitación enviada (todavía no respondida) */}
+        {canManage && participation.status === 'invited' && (
+          <button
+            onClick={() => onCancelInvite?.(participation.user.username)}
+            disabled={actionLoading}
+            className="text-xs bg-red-900 hover:bg-red-800 disabled:bg-dark-700 text-white px-3 py-1 rounded transition-colors"
+          >
+            Cancelar invitación
+          </button>
         )}
 
         {/* Badge de estado (siempre visible) */}

@@ -29,8 +29,9 @@ class ParticipationStatus(str, Enum):
 
     PENDING = "pending"      # Solicitó unirse, esperando aprobación del creador
     ACCEPTED = "accepted"    # Aceptado, parte del equipo
-    REJECTED = "rejected"    # Rechazado por el creador
+    REJECTED = "rejected"    # Rechazado por el creador, o invitación rechazada
     LEFT = "left"            # Se salió antes de que termine
+    INVITED = "invited"      # El creador lo invitó, esperando que el invitado responda
 
 
 class Participation(Base):

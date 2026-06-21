@@ -110,9 +110,11 @@ class MySearchesResponse(BaseModel):
     - created: búsquedas que yo creé
     - participating: búsquedas donde estoy participando (accepted o pending)
                      y no soy el creador
+    - invited: búsquedas donde tengo una invitación pendiente de responder
 
     En cada lista, las búsquedas están ordenadas por fecha desc.
     """
 
     created: list[SearchOut]
     participating: list[SearchOut]
+    invited: list[SearchOut] = []

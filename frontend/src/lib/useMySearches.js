@@ -5,17 +5,19 @@ import { api } from './api'
  * Hook que trae las búsquedas relevantes para el usuario actual.
  *
  * El backend devuelve:
- *   { created: [...], participating: [...] }
+ *   { created: [...], participating: [...], invited: [...] }
  *
  * "created" son las búsquedas que YO creé (de cualquier estado).
  * "participating" son las búsquedas donde me uní (accepted o pending)
  *                 sin ser creador.
+ * "invited" son las búsquedas donde me invitaron y todavía no respondí.
  *
  * Devuelve también un refresh() para forzar re-fetch.
  */
 export function useMySearches() {
   const [created, setCreated] = useState([])
   const [participating, setParticipating] = useState([])
+  const [invited, setInvited] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -26,6 +28,7 @@ export function useMySearches() {
       const response = await api.get('/searches/me/listing')
       setCreated(response.data.created)
       setParticipating(response.data.participating)
+      setInvited(response.data.invited)
     } catch (err) {
       console.error(err)
       setError('No pudimos cargar tus búsquedas.')
@@ -38,5 +41,5 @@ export function useMySearches() {
     refresh()
   }, [refresh])
 
-  return { created, participating, loading, error, refresh }
+  return { created, participating, invited, loading, error, refresh }
 }

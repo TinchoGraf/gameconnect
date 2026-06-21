@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
-import { useFriends } from '../lib/useFriends'
+import { useFriends, getOtherUser, getRelationStatus } from '../lib/useFriends'
+import { useAuth } from '../lib/AuthContext'
 import Header from '../components/Header'
+import FriendActionButton from '../components/FriendActionButton'
 
 /**
  * Página de amigos.
@@ -13,6 +15,7 @@ import Header from '../components/Header'
  * 3. Lista de amigos actuales
  */
 function FriendsPage() {
+  const { currentUser } = useAuth()
   const { friends, receivedRequests, sentRequests, loading, error, refresh } = useFriends()
 
   // Buscador
@@ -116,22 +119,6 @@ function FriendsPage() {
     }
   }
 
-  // Helper: saber si ya mandé solicitud a un usuario de los resultados
-  function getRelationStatus(username) {
-    if (friends.some(f =>
-      f.requester.username === username || f.addressee.username === username
-    )) return 'friend'
-    if (sentRequests.some(r => r.addressee.username === username)) return 'sent'
-    if (receivedRequests.some(r => r.requester.username === username)) return 'received'
-    return 'none'
-  }
-
-  // Helper: obtener el username del "otro" en una amistad
-  function getOtherUser(friendship, currentUsername) {
-    if (friendship.requester.username === currentUsername) return friendship.addressee
-    return friendship.requester
-  }
-
   if (loading) {
     return (
       <div className="min-h-screen bg-dark-900 text-white">
@@ -182,7 +169,7 @@ function FriendsPage() {
           {searchResults.length > 0 && (
             <div className="space-y-2">
               {searchResults.map((user) => {
-                const relation = getRelationStatus(user.username)
+                const relation = getRelationStatus(friends, sentRequests, receivedRequests, user.username)
                 return (
                   <div
                     key={user.id}
@@ -202,30 +189,13 @@ function FriendsPage() {
                       )}
                     </div>
 
-                    {relation === 'none' && (
-                      <button
-                        onClick={() => handleSendRequest(user.username)}
-                        disabled={actionLoading}
-                        className="text-xs bg-primary-600 hover:bg-primary-700 disabled:bg-dark-700 text-white px-3 py-1.5 rounded-lg transition-colors"
-                      >
-                        + Agregar
-                      </button>
-                    )}
-                    {relation === 'sent' && (
-                      <span className="text-xs bg-green-900/40 text-green-400 border border-green-700 px-3 py-1.5 rounded-lg">
-                        ✓ Solicitud enviada
-                      </span>
-                    )}
-                    {relation === 'received' && (
-                      <span className="text-xs text-amber-400 px-3 py-1.5">
-                        Te mandó solicitud
-                      </span>
-                    )}
-                    {relation === 'friend' && (
-                      <span className="text-xs text-green-400 px-3 py-1.5">
-                        ✓ Amigos
-                      </span>
-                    )}
+                    <FriendActionButton
+                      relation={relation}
+                      disabled={actionLoading}
+                      onSendRequest={() => handleSendRequest(user.username)}
+                      onAccept={() => handleAccept(user.username)}
+                      onReject={() => handleReject(user.username)}
+                    />
                   </div>
                 )
               })}
@@ -294,7 +264,7 @@ function FriendsPage() {
           ) : (
             <div className="space-y-2">
               {friends.map((friendship) => {
-                const otherUser = friendship.addressee
+                const otherUser = getOtherUser(friendship, currentUser.username)
                 return (
                   <div
                     key={friendship.id}

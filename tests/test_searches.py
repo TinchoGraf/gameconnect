@@ -292,6 +292,250 @@ class TestAcceptReject:
 
 
 # --------------------------------------------------------------------------
+# Invitaciones a amigos
+# --------------------------------------------------------------------------
+
+def _befriend(client, a_headers, a_username, b_headers, b_username):
+    """Hace que A y B queden amigos (A manda, B acepta)."""
+    client.post(f"/friends/requests/{b_username}", headers=a_headers)
+    client.post(f"/friends/requests/{a_username}/accept", headers=b_headers)
+
+
+def _register_and_login(client, username, email):
+    client.post("/auth/register", json={
+        "username": username, "email": email, "password": "SuperSafe1",
+    })
+    resp = client.post("/auth/login", data={"username": username, "password": "SuperSafe1"})
+    return {"Authorization": f"Bearer {resp.json()['access_token']}"}
+
+
+class TestInvitations:
+    def test_invite_requires_friendship(
+        self, client, user_with_lol_profile, second_user_with_lol_profile
+    ):
+        create = client.post("/searches", json=_base_search_payload(), headers=user_with_lol_profile)
+        sid = create.json()["id"]
+        response = client.post(
+            f"/searches/{sid}/invitations/secondplayer", headers=user_with_lol_profile
+        )
+        assert response.status_code == 400
+        assert "amigo" in response.json()["detail"].lower()
+
+    def test_invite_success(
+        self, client, user_with_lol_profile, second_user_with_lol_profile
+    ):
+        _befriend(client, user_with_lol_profile, "testplayer", second_user_with_lol_profile, "secondplayer")
+        create = client.post("/searches", json=_base_search_payload(), headers=user_with_lol_profile)
+        sid = create.json()["id"]
+        response = client.post(
+            f"/searches/{sid}/invitations/secondplayer", headers=user_with_lol_profile
+        )
+        assert response.status_code == 201, response.text
+        assert response.json()["status"] == "invited"
+
+    def test_invite_requires_creator(
+        self, client, user_with_lol_profile, second_user_with_lol_profile, loaded_games
+    ):
+        """Un usuario que no es el creador no puede invitar, aunque sea amigo del invitado."""
+        third = _register_and_login(client, "thirdplayer", "third@test.com")
+        _befriend(client, third, "thirdplayer", second_user_with_lol_profile, "secondplayer")
+        create = client.post("/searches", json=_base_search_payload(), headers=user_with_lol_profile)
+        sid = create.json()["id"]
+        response = client.post(f"/searches/{sid}/invitations/secondplayer", headers=third)
+        assert response.status_code == 403
+
+    def test_invite_nonexistent_target(self, client, user_with_lol_profile):
+        create = client.post("/searches", json=_base_search_payload(), headers=user_with_lol_profile)
+        sid = create.json()["id"]
+        response = client.post(f"/searches/{sid}/invitations/nadie", headers=user_with_lol_profile)
+        assert response.status_code == 404
+
+    def test_invite_self(self, client, user_with_lol_profile):
+        create = client.post("/searches", json=_base_search_payload(), headers=user_with_lol_profile)
+        sid = create.json()["id"]
+        response = client.post(f"/searches/{sid}/invitations/testplayer", headers=user_with_lol_profile)
+        assert response.status_code == 400
+
+    def test_invite_without_target_profile(
+        self, client, user_with_lol_profile, second_user_headers, loaded_games
+    ):
+        """El amigo invitado todavía no tiene perfil del juego de la búsqueda."""
+        _befriend(client, user_with_lol_profile, "testplayer", second_user_headers, "secondplayer")
+        create = client.post("/searches", json=_base_search_payload(), headers=user_with_lol_profile)
+        sid = create.json()["id"]
+        response = client.post(
+            f"/searches/{sid}/invitations/secondplayer", headers=user_with_lol_profile
+        )
+        assert response.status_code == 422
+        assert "perfil" in response.json()["detail"].lower()
+
+    def test_invite_server_mismatch(
+        self, client, user_with_lol_profile, second_user_headers, loaded_games
+    ):
+        client.post(
+            "/users/me/game-profiles",
+            json={
+                "game_slug": "league-of-legends", "roles": ["Mid"], "main_role": "Mid",
+                "server": "NA", "experience_level": "Casual",
+            },
+            headers=second_user_headers,
+        )
+        _befriend(client, user_with_lol_profile, "testplayer", second_user_headers, "secondplayer")
+        create = client.post("/searches", json=_base_search_payload(), headers=user_with_lol_profile)
+        sid = create.json()["id"]
+        response = client.post(
+            f"/searches/{sid}/invitations/secondplayer", headers=user_with_lol_profile
+        )
+        assert response.status_code == 422
+
+    def test_invite_already_participating(
+        self, client, user_with_lol_profile, second_user_with_lol_profile
+    ):
+        _befriend(client, user_with_lol_profile, "testplayer", second_user_with_lol_profile, "secondplayer")
+        create = client.post("/searches", json=_base_search_payload(), headers=user_with_lol_profile)
+        sid = create.json()["id"]
+        client.post(
+            f"/searches/{sid}/join", json={"role": "Jungla"}, headers=second_user_with_lol_profile
+        )
+        response = client.post(
+            f"/searches/{sid}/invitations/secondplayer", headers=user_with_lol_profile
+        )
+        assert response.status_code == 409
+
+    def test_invite_search_not_open(
+        self, client, user_with_lol_profile, second_user_with_lol_profile
+    ):
+        _befriend(client, user_with_lol_profile, "testplayer", second_user_with_lol_profile, "secondplayer")
+        create = client.post("/searches", json=_base_search_payload(), headers=user_with_lol_profile)
+        sid = create.json()["id"]
+        client.delete(f"/searches/{sid}", headers=user_with_lol_profile)
+        response = client.post(
+            f"/searches/{sid}/invitations/secondplayer", headers=user_with_lol_profile
+        )
+        assert response.status_code == 409
+
+    def test_accept_invitation_success(
+        self, client, user_with_lol_profile, second_user_with_lol_profile
+    ):
+        _befriend(client, user_with_lol_profile, "testplayer", second_user_with_lol_profile, "secondplayer")
+        create = client.post("/searches", json=_base_search_payload(), headers=user_with_lol_profile)
+        sid = create.json()["id"]
+        client.post(f"/searches/{sid}/invitations/secondplayer", headers=user_with_lol_profile)
+
+        response = client.post(
+            f"/searches/{sid}/invitations/accept",
+            json={"role": "Jungla"},
+            headers=second_user_with_lol_profile,
+        )
+        assert response.status_code == 200, response.text
+        assert response.json()["status"] == "accepted"
+        assert response.json()["role"] == "Jungla"
+
+    def test_accept_fails_when_search_no_longer_open(
+        self, client, user_with_lol_profile, second_user_with_lol_profile, loaded_games
+    ):
+        """Si la búsqueda se llenó por otra vía antes de que el invitado responda, no puede aceptar."""
+        third = _register_and_login(client, "thirdplayer", "third@test.com")
+        client.post(
+            "/users/me/game-profiles",
+            json={
+                "game_slug": "league-of-legends", "roles": ["Top"], "main_role": "Top",
+                "server": "LAS", "experience_level": "Casual",
+            },
+            headers=third,
+        )
+        _befriend(client, user_with_lol_profile, "testplayer", second_user_with_lol_profile, "secondplayer")
+        payload = {**_base_search_payload(), "max_players": 2, "join_mode": "auto"}
+        create = client.post("/searches", json=payload, headers=user_with_lol_profile)
+        sid = create.json()["id"]
+        client.post(f"/searches/{sid}/invitations/secondplayer", headers=user_with_lol_profile)
+
+        # El tercer usuario entra automático y llena la búsqueda
+        join = client.post(f"/searches/{sid}/join", json={"role": "Top"}, headers=third)
+        assert join.json()["status"] == "accepted"
+
+        response = client.post(
+            f"/searches/{sid}/invitations/accept",
+            json={"role": "Jungla"},
+            headers=second_user_with_lol_profile,
+        )
+        assert response.status_code == 409
+
+    def test_reject_invitation_success(
+        self, client, user_with_lol_profile, second_user_with_lol_profile
+    ):
+        _befriend(client, user_with_lol_profile, "testplayer", second_user_with_lol_profile, "secondplayer")
+        create = client.post("/searches", json=_base_search_payload(), headers=user_with_lol_profile)
+        sid = create.json()["id"]
+        client.post(f"/searches/{sid}/invitations/secondplayer", headers=user_with_lol_profile)
+
+        response = client.post(
+            f"/searches/{sid}/invitations/reject", headers=second_user_with_lol_profile
+        )
+        assert response.status_code == 200
+        assert response.json()["status"] == "rejected"
+
+    def test_cancel_invitation_by_creator(
+        self, client, user_with_lol_profile, second_user_with_lol_profile
+    ):
+        _befriend(client, user_with_lol_profile, "testplayer", second_user_with_lol_profile, "secondplayer")
+        create = client.post("/searches", json=_base_search_payload(), headers=user_with_lol_profile)
+        sid = create.json()["id"]
+        client.post(f"/searches/{sid}/invitations/secondplayer", headers=user_with_lol_profile)
+
+        response = client.delete(
+            f"/searches/{sid}/invitations/secondplayer", headers=user_with_lol_profile
+        )
+        assert response.status_code == 204
+
+        # Ya cancelada: el invitado no puede aceptarla
+        accept = client.post(
+            f"/searches/{sid}/invitations/accept",
+            json={"role": "Jungla"},
+            headers=second_user_with_lol_profile,
+        )
+        assert accept.status_code == 404
+
+    def test_cancel_invitation_requires_creator(
+        self, client, user_with_lol_profile, second_user_with_lol_profile
+    ):
+        _befriend(client, user_with_lol_profile, "testplayer", second_user_with_lol_profile, "secondplayer")
+        create = client.post("/searches", json=_base_search_payload(), headers=user_with_lol_profile)
+        sid = create.json()["id"]
+        client.post(f"/searches/{sid}/invitations/secondplayer", headers=user_with_lol_profile)
+
+        response = client.delete(
+            f"/searches/{sid}/invitations/secondplayer", headers=second_user_with_lol_profile
+        )
+        assert response.status_code == 403
+
+    def test_non_invitee_cannot_accept(
+        self, client, user_with_lol_profile, second_user_with_lol_profile, loaded_games
+    ):
+        third = _register_and_login(client, "thirdplayer", "third@test.com")
+        create = client.post("/searches", json=_base_search_payload(), headers=user_with_lol_profile)
+        sid = create.json()["id"]
+        response = client.post(
+            f"/searches/{sid}/invitations/accept", json={}, headers=third
+        )
+        assert response.status_code == 404
+
+    def test_my_searches_shows_invited(
+        self, client, user_with_lol_profile, second_user_with_lol_profile
+    ):
+        _befriend(client, user_with_lol_profile, "testplayer", second_user_with_lol_profile, "secondplayer")
+        create = client.post("/searches", json=_base_search_payload(), headers=user_with_lol_profile)
+        sid = create.json()["id"]
+        client.post(f"/searches/{sid}/invitations/secondplayer", headers=user_with_lol_profile)
+
+        response = client.get("/searches/me/listing", headers=second_user_with_lol_profile)
+        data = response.json()
+        assert len(data["invited"]) == 1
+        assert data["invited"][0]["id"] == sid
+        assert data["participating"] == []
+
+
+# --------------------------------------------------------------------------
 # Cambios de estado (start, complete)
 # --------------------------------------------------------------------------
 

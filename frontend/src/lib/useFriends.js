@@ -42,3 +42,30 @@ export function useFriends() {
 
   return { friends, receivedRequests, sentRequests, loading, error, refresh }
 }
+
+/**
+ * Dado un objeto Friendship (con requester/addressee) y el username del
+ * usuario actual, devuelve el "otro" usuario de la amistad.
+ *
+ * Importante: una Friendship no siempre tiene al usuario actual como
+ * addressee — si YO fui quien recibió y aceptó la solicitud, soy el
+ * addressee y el amigo es el requester.
+ */
+export function getOtherUser(friendship, currentUsername) {
+  return friendship.requester.username === currentUsername
+    ? friendship.addressee
+    : friendship.requester
+}
+
+/**
+ * Determina la relación de amistad entre el usuario actual y `username`
+ * a partir de las tres listas que devuelve useFriends().
+ */
+export function getRelationStatus(friends, sentRequests, receivedRequests, username) {
+  if (friends.some(f =>
+    f.requester.username === username || f.addressee.username === username
+  )) return 'friend'
+  if (sentRequests.some(r => r.addressee.username === username)) return 'sent'
+  if (receivedRequests.some(r => r.requester.username === username)) return 'received'
+  return 'none'
+}

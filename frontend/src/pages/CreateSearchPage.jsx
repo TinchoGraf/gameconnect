@@ -3,6 +3,8 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useGames } from '../lib/useGames'
 import { useMyGameProfiles } from '../lib/useMyGameProfiles'
+import { useFriends, getOtherUser } from '../lib/useFriends'
+import { useAuth } from '../lib/AuthContext'
 import Header from '../components/Header'
 
 /**
@@ -25,8 +27,10 @@ function CreateSearchPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
+  const { currentUser } = useAuth()
   const { games, loading: gamesLoading } = useGames()
   const { profiles: myProfiles, loading: profilesLoading } = useMyGameProfiles()
+  const { friends } = useFriends()
 
   // Si vienen desde la home con ?game_slug=..., pre-seleccionamos ese juego
   const preselectedSlug = searchParams.get('game_slug') || ''
@@ -41,6 +45,7 @@ function CreateSearchPage() {
   const [playersNeeded, setPlayersNeeded] = useState(4)
   const [minRank, setMinRank] = useState('')
   const [joinMode, setJoinMode] = useState('manual')
+  const [invitedUsernames, setInvitedUsernames] = useState([])
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
@@ -65,6 +70,13 @@ function CreateSearchPage() {
     setRolesNeeded((prev) => {
       if (prev.includes(role)) return prev.filter((r) => r !== role)
       return [...prev, role]
+    })
+  }
+
+  function toggleInvitedFriend(username) {
+    setInvitedUsernames((prev) => {
+      if (prev.includes(username)) return prev.filter((u) => u !== username)
+      return [...prev, username]
     })
   }
 
@@ -93,7 +105,24 @@ function CreateSearchPage() {
         min_rank: minRank.trim() || null,
         join_mode: joinMode,
       })
-      navigate(`/searches/${response.data.id}`)
+      const searchId = response.data.id
+
+      let inviteWarnings = []
+      if (invitedUsernames.length > 0) {
+        const results = await Promise.allSettled(
+          invitedUsernames.map((username) =>
+            api.post(`/searches/${searchId}/invitations/${username}`)
+          )
+        )
+        inviteWarnings = results
+          .map((r, i) => (r.status === 'rejected' ? {
+            username: invitedUsernames[i],
+            detail: r.reason?.response?.data?.detail || 'No pudimos invitarlo.',
+          } : null))
+          .filter(Boolean)
+      }
+
+      navigate(`/searches/${searchId}`, { state: { inviteWarnings } })
     } catch (err) {
       console.error(err)
       const detail = err.response?.data?.detail
@@ -364,6 +393,42 @@ function CreateSearchPage() {
                   ))}
                 </div>
               </div>
+
+              {/* Invitar amigos */}
+              {friends.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Invitar amigos <span className="text-gray-500">(opcional)</span>
+                  </label>
+                  <p className="text-xs text-gray-500 mb-2">
+                    Les llega una invitación que pueden aceptar o rechazar. Si no tienen perfil
+                    de {selectedGame.name} o juegan en otro server, no va a poder aceptarse.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {friends.map((friendship) => {
+                      const friend = getOtherUser(friendship, currentUser.username)
+                      return (
+                        <label
+                          key={friendship.id}
+                          className={`flex items-center gap-2 p-2 border rounded-lg cursor-pointer transition-colors ${
+                            invitedUsernames.includes(friend.username)
+                              ? 'bg-primary-600/20 border-primary-500'
+                              : 'bg-dark-900 border-dark-700 hover:border-dark-700'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={invitedUsernames.includes(friend.username)}
+                            onChange={() => toggleInvitedFriend(friend.username)}
+                            className="accent-primary-500"
+                          />
+                          <span className="text-sm">{friend.username}</span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </>
           )}
 

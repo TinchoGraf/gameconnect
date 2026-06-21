@@ -14,7 +14,7 @@ import SearchCard from '../components/SearchCard'
  * Reutilización pura: misma card, distinto contexto.
  */
 function MySearchesPage() {
-  const { created, participating, loading, error } = useMySearches()
+  const { created, participating, invited, loading, error } = useMySearches()
 
   return (
     <div className="min-h-screen bg-dark-900 text-white">
@@ -50,7 +50,7 @@ function MySearchesPage() {
         )}
 
         {/* Estado totalmente vacío */}
-        {!loading && !error && created.length === 0 && participating.length === 0 && (
+        {!loading && !error && created.length === 0 && participating.length === 0 && invited.length === 0 && (
           <div className="bg-dark-800 border border-dark-700 rounded-lg p-12 text-center">
             <p className="text-2xl mb-2">🔍</p>
             <p className="text-lg font-semibold mb-2">Todavía no tenés actividad</p>
@@ -72,6 +72,34 @@ function MySearchesPage() {
               </Link>
             </div>
           </div>
+        )}
+
+        {/* Sección: invitaciones pendientes de responder */}
+        {!loading && !error && invited.length > 0 && (
+          <section className="mb-8">
+            <h2 className="text-xl font-bold mb-3">
+              Invitaciones <span className="text-sm font-normal text-gray-400">({invited.length})</span>
+            </h2>
+            <div className="space-y-2">
+              {invited.map((search) => (
+                <div
+                  key={search.id}
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-dark-800 border border-blue-700 rounded-lg p-4"
+                >
+                  <p className="text-sm text-gray-300">
+                    <strong className="text-white">{search.creator.username}</strong> te invitó a{' '}
+                    <span className="text-primary-500">{search.game.name}</span>: "{search.title}"
+                  </p>
+                  <Link
+                    to={`/searches/${search.id}`}
+                    className="text-sm bg-primary-600 hover:bg-primary-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-center whitespace-nowrap"
+                  >
+                    Ver y responder →
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </section>
         )}
 
         {/* Sección: búsquedas que creé */}
