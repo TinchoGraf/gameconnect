@@ -31,7 +31,7 @@ function ParticipantCard({
   }
 
   return (
-    <div className="bg-dark-900 border border-dark-700 rounded-lg p-3 flex items-center justify-between gap-3">
+    <div className="bg-dark-900 border border-dark-700 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-white truncate">
           {participation.user.username}
@@ -48,7 +48,7 @@ function ParticipantCard({
         )}
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-2 flex-wrap sm:shrink-0">
         {/* Acciones de creador sobre postulante pendiente */}
         {canManage && participation.status === 'pending' && (
           <>

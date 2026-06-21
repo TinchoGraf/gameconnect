@@ -366,12 +366,12 @@ function SearchDetailPage() {
             <p className="text-sm text-gray-400 mb-4">
               Estado actual: <strong>{statusUi.text}</strong>. Próximas acciones disponibles:
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2">
               {(isSearchOpen || isSearchFull) && (
                 <button
                   onClick={handleStart}
                   disabled={actionLoading}
-                  className="text-sm bg-blue-700 hover:bg-blue-600 disabled:bg-dark-700 text-white px-4 py-2 rounded transition-colors"
+                  className="w-full sm:w-auto text-sm bg-blue-700 hover:bg-blue-600 disabled:bg-dark-700 text-white px-4 py-2 rounded transition-colors"
                 >
                   ▶ Iniciar partida
                 </button>
@@ -380,7 +380,7 @@ function SearchDetailPage() {
                 <button
                   onClick={handleComplete}
                   disabled={actionLoading}
-                  className="text-sm bg-purple-700 hover:bg-purple-600 disabled:bg-dark-700 text-white px-4 py-2 rounded transition-colors"
+                  className="w-full sm:w-auto text-sm bg-purple-700 hover:bg-purple-600 disabled:bg-dark-700 text-white px-4 py-2 rounded transition-colors"
                 >
                   ✓ Marcar como completada
                 </button>
@@ -389,7 +389,7 @@ function SearchDetailPage() {
                 <button
                   onClick={handleCancel}
                   disabled={actionLoading}
-                  className="text-sm bg-red-900 hover:bg-red-800 disabled:bg-dark-700 text-white px-4 py-2 rounded transition-colors"
+                  className="w-full sm:w-auto text-sm bg-red-900 hover:bg-red-800 disabled:bg-dark-700 text-white px-4 py-2 rounded transition-colors"
                 >
                   ✕ Cancelar búsqueda
                 </button>
