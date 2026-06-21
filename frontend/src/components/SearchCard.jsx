@@ -37,7 +37,7 @@ function SearchCard({ search }) {
         )}
       </p>
 
-      <div className="grid grid-cols-2 gap-2 text-xs text-gray-300 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-300 mb-3">
         <div>
           <span className="text-gray-500">Server: </span>
           <span className="text-white font-semibold">{search.server}</span>
