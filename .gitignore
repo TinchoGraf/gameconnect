@@ -41,3 +41,9 @@ logs/
 build/
 dist/
 *.egg
+
+# Certificados y claves privadas
+*.pem
+*.key
+*.p12
+*.pfx
